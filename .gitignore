@@ -1,5 +1,6 @@
 /.vscode
 /.history
+/.npmrc
 node_modules
 lib
 package-lock.json
