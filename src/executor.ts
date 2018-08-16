@@ -20,6 +20,7 @@ import { ConcatSource, RawSource } from 'webpack-sources';
 
 import { Builder, Builders } from './Builder';
 import liveReloadMiddleware from './plugins/react-native/liveReloadMiddleware';
+import symbolicateMiddleware from './plugins/react-native/symbolicateMiddleware';
 import Spin from './Spin';
 import { hookAsync, hookSync } from './webpackHooks';
 
@@ -513,7 +514,6 @@ const startWebpackDevServer = (hasBackend: boolean, spin: Spin, builder: Builder
       'react-native/local-cli/server/middleware/systraceProfileMiddleware.js'
     );
     const unless = builder.require('react-native/local-cli/server/middleware/unless');
-    const symbolicateMiddleware = builder.require('haul/src/server/middleware/symbolicateMiddleware');
 
     // Workaround for bug in Haul /symbolicate under Windows
     compiler.options.output.path = path.sep;
@@ -593,7 +593,7 @@ const startWebpackDevServer = (hasBackend: boolean, spin: Spin, builder: Builder
       .use(getDevToolsMiddleware(args, () => wsProxy && wsProxy.isChromeConnected()))
       .use(getDevToolsMiddleware(args, () => ms && ms.isChromeConnected()))
       .use(liveReloadMiddleware(compiler))
-      .use(symbolicateMiddleware(compiler))
+      .use(symbolicateMiddleware(compiler, logger))
       .use(openStackFrameInEditorMiddleware(args))
       .use(copyToClipBoardMiddleware)
       .use(statusPageMiddleware)
@@ -1123,7 +1123,9 @@ const execute = (cmd: string, argv: any, builders: Builders, spin: Spin) => {
         }
 
         cluster.on('exit', (worker, code, signal) => {
-          spinLogger.warn(`Worker ${workerBuilders[worker.process.pid].id} died, code: ${code}, signal: ${signal}`);
+          if (cmd !== 'build') {
+            spinLogger.warn(`Worker ${workerBuilders[worker.process.pid].id} died, code: ${code}, signal: ${signal}`);
+          }
         });
       });
     }

@@ -198,6 +198,7 @@ const createConfig = (builder: Builder, spin: Spin) => {
 
   if (webpackVer >= 4) {
     baseConfig.mode = !spin.dev ? 'production' : 'development';
+    baseConfig.performance = { hints: false };
   }
   if (builder.sourceMap) {
     baseConfig.devtool = spin.dev ? '#cheap-module-source-map' : '#nosources-source-map';
