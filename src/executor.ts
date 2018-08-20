@@ -30,6 +30,8 @@ const BACKEND_CHANGE_MSG = 'backend_change';
 const debug = Debug('spinjs');
 const expoPorts = {};
 
+const clientStats = { all: false, assets: true, warnings: true, errors: true, errorDetails: false };
+
 const spinLogger = minilog('spin');
 
 process.on('uncaughtException', ex => {
@@ -112,7 +114,7 @@ const webpackReporter = (spin: Spin, builder: Builder, outputPath: string, log, 
 
     if (builder.writeStats) {
       mkdirp.sync(outputPath);
-      fs.writeFileSync(path.join(outputPath, 'stats.json'), JSON.stringify(stats.toJson()));
+      fs.writeFileSync(path.join(outputPath, 'stats.json'), JSON.stringify(stats.toJson(clientStats)));
     }
   }
   if (!spin.watch && cluster.isWorker) {
@@ -429,7 +431,7 @@ const startWebpackDevServer = (hasBackend: boolean, spin: Spin, builder: Builder
     if (stats.compilation.assets['assets.json']) {
       const assetsMap = JSON.parse(stats.compilation.assets['assets.json'].source());
       const prefix = compiler.outputPath;
-      _.each(stats.toJson().assetsByChunkName, (assets, bundle) => {
+      _.each(stats.toJson(clientStats).assetsByChunkName, (assets, bundle) => {
         const bundleJs = assets.constructor === Array ? assets[0] : assets;
         assetsMap[`${bundle}.js`] = prefix + bundleJs;
         if (assets.length > 1) {

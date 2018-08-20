@@ -12,6 +12,9 @@ export default class TypeScriptPlugin implements ConfigPlugin {
 
     if (stack.hasAll(['ts', 'webpack'])) {
       const atl = builder.require.probe('awesome-typescript-loader') ? 'awesome-typescript-loader' : undefined;
+      const tsChecker = builder.require.probe('fork-ts-checker-webpack-plugin')
+        ? 'fork-ts-checker-webpack-plugin'
+        : undefined;
       const jsRuleFinder = new JSRuleFinder(builder);
       const tsRule = jsRuleFinder.findAndCreateTSRule();
       tsRule.test = /^(?!.*[\\\/]node_modules[\\\/]).*\.ts$/;
@@ -19,17 +22,27 @@ export default class TypeScriptPlugin implements ConfigPlugin {
         atl
           ? {
               loader: atl,
-              options: spin.createConfig(builder, 'awesomeTypescript', { ...builder.tsLoaderOptions })
+              options: spin.createConfig(builder, 'awesomeTypescript', { ...builder.tsLoaderOptions, useCache: true })
             }
           : {
               loader: 'ts-loader',
-              options: spin.createConfig(builder, 'tsLoader', { silent: true, ...builder.tsLoaderOptions })
+              options: spin.createConfig(builder, 'tsLoader', {
+                transpileOnly: tsChecker ? true : false,
+                experimentalWatchApi: true,
+                ...builder.tsLoaderOptions
+              })
             }
       ];
 
       if (atl) {
         builder.config = spin.merge(builder.config, {
           plugins: [new (builder.require('awesome-typescript-loader')).CheckerPlugin()]
+        });
+      }
+
+      if (tsChecker) {
+        builder.config = spin.merge(builder.config, {
+          plugins: [new (builder.require(tsChecker))({ tsconfig: path.join(builder.require.cwd, 'tsconfig.json') })]
         });
       }
 

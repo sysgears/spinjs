@@ -12,15 +12,20 @@ const __WINDOWS__ = /^win/.test(process.platform);
 const createPlugins = (builder: Builder, spin: Spin) => {
   const stack = builder.stack;
   const webpack = builder.require('webpack');
+  const webpackVer = builder.require('webpack/package.json').version.split('.')[0];
   const buildNodeEnv = process.env.NODE_ENV || (spin.dev ? (spin.test ? 'test' : 'development') : 'production');
 
   let plugins = [];
 
   if (spin.dev) {
-    plugins.push(new webpack.NamedModulesPlugin());
+    if (webpackVer < 4) {
+      plugins.push(new webpack.NamedModulesPlugin());
+    }
     if (stack.hasAny(['server', 'web']) && !spin.test) {
       plugins.push(new webpack.HotModuleReplacementPlugin());
-      plugins.push(new webpack.NoEmitOnErrorsPlugin());
+      if (webpackVer < 4) {
+        plugins.push(new webpack.NoEmitOnErrorsPlugin());
+      }
     }
   } else {
     const uglifyOpts: any = builder.sourceMap ? { sourceMap: true } : {};
@@ -37,7 +42,9 @@ const createPlugins = (builder: Builder, spin: Spin) => {
       };
     }
     plugins.push(new webpack.LoaderOptionsPlugin(loaderOpts));
-    plugins.push(new webpack.optimize.ModuleConcatenationPlugin());
+    if (webpackVer < 4) {
+      plugins.push(new webpack.optimize.ModuleConcatenationPlugin());
+    }
   }
 
   const backendOption = builder.backendUrl;
@@ -109,8 +116,6 @@ const createPlugins = (builder: Builder, spin: Spin) => {
             })
           );
         }
-
-        const webpackVer = builder.require('webpack/package.json').version.split('.')[0];
 
         if (webpackVer < 4 && !spin.dev) {
           plugins.push(
@@ -191,22 +196,22 @@ const createConfig = (builder: Builder, spin: Spin) => {
       warnings: true,
       publicPath: false,
       colors: true
-    }
+    },
+    output: {}
   };
 
   const webpackVer = builder.require('webpack/package.json').version.split('.')[0];
 
+  if (builder.sourceMap) {
+    baseConfig.devtool = spin.dev ? '#cheap-module-source-map' : '#nosources-source-map';
+    baseConfig.output.devtoolModuleFilenameTemplate = spin.dev
+      ? info => 'webpack:///./' + path.relative(cwd, info.absoluteResourcePath.split('?')[0]).replace(/\\/g, '/')
+      : info => path.relative(cwd, info.absoluteResourcePath);
+  }
   if (webpackVer >= 4) {
     baseConfig.mode = !spin.dev ? 'production' : 'development';
     baseConfig.performance = { hints: false };
-  }
-  if (builder.sourceMap) {
-    baseConfig.devtool = spin.dev ? '#cheap-module-source-map' : '#nosources-source-map';
-    baseConfig.output = {
-      devtoolModuleFilenameTemplate: spin.dev
-        ? info => 'webpack:///./' + path.relative(cwd, info.absoluteResourcePath.split('?')[0]).replace(/\\/g, '/')
-        : info => path.relative(cwd, info.absoluteResourcePath)
-    };
+    baseConfig.output.pathinfo = false;
   }
 
   const baseDevServerConfig = {
@@ -242,11 +247,9 @@ const createConfig = (builder: Builder, spin: Spin) => {
       }
     };
     if (builder.sourceMap) {
-      config.output = {
-        devtoolModuleFilenameTemplate: spin.dev
-          ? ({ resourcePath }) => path.join(builder.require.cwd, resourcePath)
-          : info => path.relative(cwd, info.absoluteResourcePath)
-      };
+      config.output.devtoolModuleFilenameTemplate = spin.dev
+        ? ({ resourcePath }) => path.join(builder.require.cwd, resourcePath)
+        : info => path.relative(cwd, info.absoluteResourcePath);
     }
   } else {
     config = {
@@ -355,6 +358,9 @@ const createConfig = (builder: Builder, spin: Spin) => {
         config = {
           ...config,
           optimization: {
+            namedModules: true,
+            removeAvailableModules: false,
+            removeEmptyChunks: false,
             splitChunks: {
               cacheGroups: {
                 commons: {
@@ -363,7 +369,8 @@ const createConfig = (builder: Builder, spin: Spin) => {
                   chunks: 'all'
                 }
               }
-            }
+            },
+            noEmitOnErrors: true
           }
         };
       }

@@ -38,60 +38,26 @@
  *   the source map that is tucked away inside webpack's in-memory filesystem.
  *
  */
-import * as delve from 'dlv';
+import * as fetch from 'node-fetch';
 import * as path from 'path';
 import { SourceMapConsumer } from 'source-map';
-
-function getCompilerByPlatform(webpackCompiler: any, platform: string, logger) {
-  const isMulti = Boolean(webpackCompiler.compilers);
-
-  // we're running in single-platform mode so all is right in the universe.
-  if (!isMulti) {
-    return webpackCompiler;
-  }
-
-  // find the right compiler based on the platform in the bundle's output filename (e.g. index.android.js)
-  //   (see: makeReactNativeConfig.js -> getDefaultConfig)
-  const compiler = webpackCompiler.compilers.find(c => c.options.output.filename.split('.')[1] === platform);
-
-  // sanity check
-  if (!compiler) {
-    logger.warn(
-      `Unable to find a webpack compiler for ${platform}\n\n` +
-        `Check your middleware to ensure you're passing the correct platform to getCompilerByPlatform().\n\n` +
-        `Returning the first compiler in the list.  Your source maps *might* be off if you're using platform-specific code.`
-    );
-    // chances are pretty good this will be "ok", but platform-specific code won't be
-    return webpackCompiler.compilers[0];
-  }
-
-  return compiler;
-}
 
 /**
  * Creates a SourceMapConsumer so we can query it.
  */
-function createSourceMapConsumer(compiler, logger) {
-  // turns /path/to/use into 'path.to.use'
-  const outputPath: string = compiler.options.output.path;
-  const hops: string[] = outputPath.split(path.sep).filter((pathPart: string) => pathPart !== ''); // no blanks please
-
-  // grab the base directory out of webpack's deeply nested filesystem
-  const base = delve(compiler.outputFileSystem.data, hops);
-
-  // grab the Buffer for the source map
-  const sourceMapBuffer = base && base[`${compiler.options.output.filename}.map`];
+async function createSourceMapConsumer(compiler: any, url: string, logger: any) {
+  const response = await fetch(url);
+  const sourceMap = await response.text();
 
   // we stop here if we couldn't find that map
-  if (!sourceMapBuffer) {
+  if (!sourceMap) {
     logger.warn('Unable to find source map.');
     return null;
   }
 
   // feed the raw source map into our consumer
   try {
-    const raw = sourceMapBuffer.toString();
-    return new SourceMapConsumer(raw);
+    return new SourceMapConsumer(sourceMap);
   } catch (err) {
     logger.error('There was a problem reading the source map. :(');
     return null;
@@ -142,12 +108,12 @@ function getRequestedFrames(req) {
 /**
  * Create an Express middleware for handling React Native symbolication requests
  */
-export default function create(webpackCompiler, logger) {
+export default function create(compiler, logger) {
   /**
-   * The Express middleware for symbolicatin'.
+   * The Express middleware for symbolicating'.
    */
-  function symbolicateMiddleware(req, res, next) {
-    if (req.path !== '/symbolicate') {
+  async function symbolicateMiddleware(req, res, next) {
+    if (req.cleanPath !== '/symbolicate') {
       return next();
     }
 
@@ -157,15 +123,27 @@ export default function create(webpackCompiler, logger) {
       return next();
     }
 
-    // grab the platform from the first frame (e.g. index.ios.bundle?platform=ios&dev=true&minify=false:69825:16)
+    // grab the platform and filename from the first frame (e.g. index.ios.bundle?platform=ios&dev=true&minify=false:69825:16)
+    const filenameMatch = unconvertedFrames[0].file.match(/\/(\D+)\?/);
     const platformMatch = unconvertedFrames[0].file.match(/platform=([a-zA-Z]*)/);
-    const platform: string = platformMatch && platformMatch[1];
 
-    // grab the appropriate webpack compiler
-    const compiler = getCompilerByPlatform(webpackCompiler, platform, logger);
+    const filename: string = filenameMatch && filenameMatch[1];
+    const platform = platformMatch && platformMatch[1];
+
+    if (!filename || !platform) {
+      return next();
+    }
+
+    const [name, ...rest] = filename.split('.');
+    const bundleName = `${name}.${platform}.${rest[rest.length - 1]}`;
 
     // grab our source map consumer
-    const consumer = createSourceMapConsumer(compiler, logger);
+    const consumer = await createSourceMapConsumer(
+      compiler,
+      `http://localhost:${req.get('host').split(':')[1]}/${bundleName}.map`,
+      logger
+    );
+    // console.log('C', consumer);
     if (!consumer) {
       return next();
     }
