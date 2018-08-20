@@ -4,6 +4,7 @@ import * as path from 'path';
 import * as url from 'url';
 
 import { Builder } from '../Builder';
+import BuilderDiscoverer from '../BuilderDiscoverer';
 import { ConfigPlugin } from '../ConfigPlugin';
 import Spin from '../Spin';
 
@@ -28,7 +29,10 @@ const createPlugins = (builder: Builder, spin: Spin) => {
       }
     }
   } else {
-    const uglifyOpts: any = builder.sourceMap ? { sourceMap: true } : {};
+    const uglifyOpts: any = { test: /\.(js|bundle)(\?.*)?$/i, cache: true, parallel: true };
+    if (builder.sourceMap) {
+      uglifyOpts.sourceMap = true;
+    }
     if (stack.hasAny('angular')) {
       // https://github.com/angular/angular/issues/10618
       uglifyOpts.mangle = { keep_fnames: true };
