@@ -174,7 +174,13 @@ const createConfig = (builder: Builder, spin: Spin) => {
   const baseConfig: any = {
     name: builder.name,
     module: {
-      rules: []
+      rules: [
+        {
+          test: /\.mjs$/,
+          include: /node_modules/,
+          type: 'javascript/auto'
+        }
+      ]
     },
     resolve: { symlinks: false },
     watchOptions: {

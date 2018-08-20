@@ -24,7 +24,7 @@ import symbolicateMiddleware from './plugins/react-native/symbolicateMiddleware'
 import Spin from './Spin';
 import { hookAsync, hookSync } from './webpackHooks';
 
-const SPIN_DLL_VERSION = 1;
+const SPIN_DLL_VERSION = 2;
 const BACKEND_CHANGE_MSG = 'backend_change';
 
 const debug = Debug('spinjs');

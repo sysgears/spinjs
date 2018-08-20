@@ -113,7 +113,7 @@ export default function create(compiler, logger) {
    * The Express middleware for symbolicating'.
    */
   async function symbolicateMiddleware(req, res, next) {
-    if (req.cleanPath !== '/symbolicate') {
+    if (req.path !== '/symbolicate') {
       return next();
     }
 
@@ -135,12 +135,12 @@ export default function create(compiler, logger) {
     }
 
     const [name, ...rest] = filename.split('.');
-    const bundleName = `${name}.${platform}.${rest[rest.length - 1]}`;
+    const bundleName = `${name}.mobile.${rest[rest.length - 1]}`;
 
     // grab our source map consumer
     const consumer = await createSourceMapConsumer(
       compiler,
-      `http://localhost:${req.get('host').split(':')[1]}/${bundleName}.map`,
+      `http://localhost:${req.headers.host.split(':')[1]}/${bundleName}.map`,
       logger
     );
     // console.log('C', consumer);
