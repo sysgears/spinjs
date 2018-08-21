@@ -130,6 +130,7 @@ Each builder has a name and a `stack` property at minimum. Builder properties re
 |frontendRefreshOnBackendChange|Trigger web frontend refresh when backend code changes|
 |persistGraphQL|Generate and use Apollo persistent GraphQL queries|
 |devProxy|Proxy all unknown requests from front-end running on Webpack during development to back-end|
+|profile|Generate builder profiling data for usage in Chrome Performance tab|
 |writeStats|Write `stats.json` to disk, default: `false`|
 |nodeDebugger|To enable or disable node debugger, default: `true`|
 |{toolName}Config|Additional options for webpack, loaders or other tools. The `{toolName}` should be the name of the loader or tool and the value is the additional config options for the loader. Possible names for the tools are: `webpackConfig`, `babelConfig`, `cssConfig`, `sassConfig`, `graphqlTagConfig`, etc|
@@ -176,6 +177,14 @@ See `webpack-merge` strategies documentation [here](https://github.com/survivejs
 #### Current working directory
 When reading `.spinrc.js` configs `spinjs` does so recursively in all the child directories. When config in each such directory is being read or builder get executed, process current working directory is set to point to this same directory. This
 scheme of operation should be compatible to all 3rd party tools.
+
+#### Profiling builders
+To troubleshoot builder performance set `profile: true` option on the builder. This will generate
+`profileEvents.json` file inside `build` dir. In order to view the profile file:
+  - Go to Chrome, open `DevTools`, and go to the `Performance tab` (formerly Timeline).
+  - Drag and drop generated file `profileEvents.json` into the profiler.
+
+It will then display timeline stats and calls info.
 
 ### Community support
 

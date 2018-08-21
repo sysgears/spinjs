@@ -22,6 +22,17 @@ const createPlugins = (builder: Builder, spin: Spin) => {
     if (webpackVer < 4) {
       plugins.push(new webpack.NamedModulesPlugin());
     }
+    if (builder.profile) {
+      plugins.push(
+        new webpack.debug.ProfilingPlugin({
+          outputPath: path.join(
+            builder.require.cwd,
+            stack.hasAny('dll') ? builder.dllBuildDir : builder.buildDir,
+            'profileEvents.json'
+          )
+        })
+      );
+    }
     if (stack.hasAny(['server', 'web']) && !spin.test) {
       plugins.push(new webpack.HotModuleReplacementPlugin());
       if (webpackVer < 4) {
@@ -186,7 +197,7 @@ const createConfig = (builder: Builder, spin: Spin) => {
         }
       ]
     },
-    resolve: { symlinks: false },
+    resolve: { symlinks: false, cacheWithContext: false },
     watchOptions: {
       ignored: /build/
     },
@@ -213,7 +224,7 @@ const createConfig = (builder: Builder, spin: Spin) => {
   const webpackVer = builder.require('webpack/package.json').version.split('.')[0];
 
   if (builder.sourceMap) {
-    baseConfig.devtool = spin.dev ? '#cheap-module-source-map' : '#nosources-source-map';
+    baseConfig.devtool = spin.dev ? '#cheap-module-eval-source-map' : '#nosources-source-map';
     baseConfig.output.devtoolModuleFilenameTemplate = spin.dev
       ? info => 'webpack:///./' + path.relative(cwd, info.absoluteResourcePath.split('?')[0]).replace(/\\/g, '/')
       : info => path.relative(cwd, info.absoluteResourcePath);
@@ -293,7 +304,7 @@ const createConfig = (builder: Builder, spin: Spin) => {
       config.entry.vendor.push('webpack-dev-server/client');
     }
     if (builder.sourceMap) {
-      config.devtool = spin.dev ? '#cheap-module-source-map' : '#nosources-source-map';
+      config.devtool = spin.dev ? '#cheap-module-eval-source-map' : '#nosources-source-map';
     }
   } else {
     if (spin.dev) {
@@ -364,25 +375,36 @@ const createConfig = (builder: Builder, spin: Spin) => {
           port: webpackDevPort
         }
       };
-      if (webpackVer >= 4 && !spin.dev) {
-        config = {
-          ...config,
-          optimization: {
-            namedModules: true,
-            removeAvailableModules: false,
-            removeEmptyChunks: false,
-            splitChunks: {
-              cacheGroups: {
-                commons: {
-                  test: /[\\/]node_modules[\\/]/,
-                  name: 'vendor',
-                  chunks: 'all'
+      if (webpackVer >= 4) {
+        if (spin.dev) {
+          config = {
+            ...config,
+            optimization: {
+              removeAvailableModules: false,
+              removeEmptyChunks: false,
+              splitChunks: false
+            }
+          };
+        } else {
+          config = {
+            ...config,
+            optimization: {
+              namedModules: true,
+              removeAvailableModules: false,
+              removeEmptyChunks: false,
+              splitChunks: {
+                cacheGroups: {
+                  commons: {
+                    test: /[\\/]node_modules[\\/]/,
+                    name: 'vendor',
+                    chunks: 'all'
+                  }
                 }
-              }
-            },
-            noEmitOnErrors: true
-          }
-        };
+              },
+              noEmitOnErrors: true
+            }
+          };
+        }
       }
       if (builder.devProxy) {
         const proxyUrl =
