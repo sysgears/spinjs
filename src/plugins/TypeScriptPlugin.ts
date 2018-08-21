@@ -28,7 +28,7 @@ export default class TypeScriptPlugin implements ConfigPlugin {
               options: spin.createConfig(builder, 'tsLoader', {
                 transpileOnly: tsChecker ? true : false,
                 experimentalWatchApi: true,
-                happyPackMode: hasParallelLoalder(builder),
+                happyPackMode: hasParallelLoalder(builder) ? true : false,
                 ...builder.tsLoaderOptions
               })
             }
@@ -44,6 +44,7 @@ export default class TypeScriptPlugin implements ConfigPlugin {
         builder.config = spin.merge(builder.config, {
           plugins: [
             new (builder.require('fork-ts-checker-webpack-plugin'))({
+              tsconfig: path.join(builder.require.cwd, 'tsconfig.json'),
               checkSyntacticErrors: hasParallelLoalder(builder)
             })
           ]
