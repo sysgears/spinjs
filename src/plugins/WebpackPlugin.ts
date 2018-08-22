@@ -186,15 +186,22 @@ const createConfig = (builder: Builder, spin: Spin) => {
 
   const cwd = process.cwd();
 
+  const webpackVer = builder.require('webpack/package.json').version.split('.')[0];
+
   const baseConfig: any = {
     name: builder.name,
     module: {
       rules: [
-        {
-          test: /\.mjs$/,
-          include: /node_modules/,
-          type: 'javascript/auto'
-        }
+        webpackVer >= 4
+          ? {
+              test: /\.mjs$/,
+              include: /node_modules/,
+              type: 'javascript/auto'
+            }
+          : {
+              test: /\.mjs$/,
+              include: /node_modules/
+            }
       ]
     },
     resolve: { symlinks: false, cacheWithContext: false },
@@ -220,8 +227,6 @@ const createConfig = (builder: Builder, spin: Spin) => {
     },
     output: {}
   };
-
-  const webpackVer = builder.require('webpack/package.json').version.split('.')[0];
 
   if (builder.sourceMap) {
     baseConfig.devtool = spin.dev ? '#cheap-module-source-map' : '#nosources-source-map';

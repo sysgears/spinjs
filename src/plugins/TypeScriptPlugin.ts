@@ -14,6 +14,20 @@ export default class TypeScriptPlugin implements ConfigPlugin {
     if (stack.hasAll(['ts', 'webpack'])) {
       const atl = builder.require.probe('awesome-typescript-loader');
       const tsChecker = builder.require.probe('fork-ts-checker-webpack-plugin');
+      let tsLoaderOpts;
+      if (!!builder.require.probe('ts-loader')) {
+        const verDigits = builder.require('ts-loader/package.json').version.split('.');
+        const tsLoaderVer = verDigits[0] * 10 + +verDigits[1];
+        tsLoaderOpts = spin.createConfig(builder, 'tsLoader', {
+          transpileOnly: tsChecker ? true : false,
+          happyPackMode: hasParallelLoalder(builder) ? true : false,
+          ...builder.tsLoaderOptions
+        });
+        if (tsLoaderVer > 33) {
+          tsLoaderOpts.experimentalWatchApi = true;
+        }
+      }
+
       const jsRuleFinder = new JSRuleFinder(builder);
       const tsRule = jsRuleFinder.findAndCreateTSRule();
       tsRule.test = /^(?!.*[\\\/]node_modules[\\\/]).*\.ts$/;
@@ -25,12 +39,7 @@ export default class TypeScriptPlugin implements ConfigPlugin {
             }
           : {
               loader: 'ts-loader',
-              options: spin.createConfig(builder, 'tsLoader', {
-                transpileOnly: tsChecker ? true : false,
-                experimentalWatchApi: true,
-                happyPackMode: hasParallelLoalder(builder) ? true : false,
-                ...builder.tsLoaderOptions
-              })
+              options: tsLoaderOpts
             }
       ]);
 
