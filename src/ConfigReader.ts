@@ -81,6 +81,7 @@ export default class ConfigReader {
       builder.dllBuildDir = builder.dllBuildDir || 'build/dll';
       builder.webpackDll = typeof builder.webpackDll !== 'undefined' ? builder.webpackDll : true;
       builder.sourceMap = typeof builder.sourceMap !== 'undefined' ? builder.sourceMap : true;
+      builder.minify = typeof builder.minify !== 'undefined' ? builder.minify : true;
       builder.cache =
         typeof builder.cache === 'string' && builder.cache !== 'auto'
           ? builder.cache

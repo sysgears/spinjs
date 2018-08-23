@@ -126,6 +126,7 @@ Each builder has a name and a `stack` property at minimum. Builder properties re
 |ssr|Use server side rendering for the application (makes requiring web assets inside server code possible)|
 |webpackDll|Utilize Webpack DLLs to speed up incremental builds (default `true`)|
 |sourceMap|Generate source maps for output code (default `true`)|
+|minify|Minify output code for production (default `true`)|
 |cache|One of `true`, `false`, `'auto'`, `'auto'` enables Babel and other caching only during development, `true` enables caching for production builds too, `false` disables caching (default: `'auto'`)|
 |frontendRefreshOnBackendChange|Trigger web frontend refresh when backend code changes|
 |persistGraphQL|Generate and use Apollo persistent GraphQL queries|

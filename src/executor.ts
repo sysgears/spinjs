@@ -1062,7 +1062,7 @@ const execute = (cmd: string, argv: any, builders: Builders, spin: Spin) => {
             }
           }
 
-          const testCmd = path.join(process.cwd(), 'node_modules/.bin/mocha-webpack');
+          const testCmd = path.join(process.cwd(), 'node_modules/.bin/mocha-webpack' + (__WINDOWS__ ? '.cmd' : ''));
           testArgs.push.apply(testArgs, process.argv.slice(process.argv.indexOf('test') + 1));
           spinLogger.info(`Running ${testCmd} ${testArgs.join(' ')}`);
 
