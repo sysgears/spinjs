@@ -40,7 +40,8 @@ const createPlugins = (builder: Builder, spin: Spin) => {
       }
     }
   } else {
-    if (!builder.minify) {
+    const loaderOpts: any = { minimize: builder.minify };
+    if (builder.minify) {
       const uglifyOpts: any = { test: /\.(js|bundle)(\?.*)?$/i, cache: true, parallel: true };
       if (builder.sourceMap) {
         uglifyOpts.sourceMap = true;
@@ -51,14 +52,13 @@ const createPlugins = (builder: Builder, spin: Spin) => {
       }
       const UglifyJsPlugin = builder.require('uglifyjs-webpack-plugin');
       plugins.push(new UglifyJsPlugin(uglifyOpts));
-      const loaderOpts: any = { minimize: true };
       if (stack.hasAny('angular')) {
         loaderOpts.htmlLoader = {
           minimize: false // workaround for ng2
         };
       }
-      plugins.push(new webpack.LoaderOptionsPlugin(loaderOpts));
     }
+    plugins.push(new webpack.LoaderOptionsPlugin(loaderOpts));
     if (webpackVer < 4) {
       plugins.push(new webpack.optimize.ModuleConcatenationPlugin());
     }
@@ -292,6 +292,31 @@ const createConfig = (builder: Builder, spin: Spin) => {
     };
   }
 
+  if (webpackVer >= 4) {
+    if (spin.dev) {
+      config = {
+        ...config,
+        optimization: {
+          removeAvailableModules: false,
+          removeEmptyChunks: false,
+          splitChunks: false
+        }
+      };
+    } else {
+      config = {
+        ...config,
+        optimization: {
+          minimize: builder.minify,
+          concatenateModules: builder.minify,
+          namedModules: true,
+          removeAvailableModules: false,
+          removeEmptyChunks: false,
+          noEmitOnErrors: true
+        }
+      };
+    }
+  }
+
   if (stack.hasAny('dll')) {
     const name = `vendor_${humps.camelize(builder.parent.name)}`;
     config = {
@@ -382,37 +407,6 @@ const createConfig = (builder: Builder, spin: Spin) => {
           port: webpackDevPort
         }
       };
-      if (webpackVer >= 4) {
-        if (spin.dev) {
-          config = {
-            ...config,
-            optimization: {
-              removeAvailableModules: false,
-              removeEmptyChunks: false,
-              splitChunks: false
-            }
-          };
-        } else {
-          config = {
-            ...config,
-            optimization: {
-              namedModules: true,
-              removeAvailableModules: false,
-              removeEmptyChunks: false,
-              splitChunks: {
-                cacheGroups: {
-                  commons: {
-                    test: /[\\/]node_modules[\\/]/,
-                    name: 'vendor',
-                    chunks: 'all'
-                  }
-                }
-              },
-              noEmitOnErrors: true
-            }
-          };
-        }
-      }
       if (builder.devProxy) {
         const proxyUrl =
           typeof builder.devProxy === 'string'
@@ -425,6 +419,17 @@ const createConfig = (builder: Builder, spin: Spin) => {
             target: proxyUrl,
             logLevel: 'info',
             ws: true
+          }
+        };
+      }
+      if (webpackVer >= 4 && !spin.dev) {
+        config.optimization.splitChunks = {
+          cacheGroups: {
+            commons: {
+              test: /[\\/]node_modules[\\/]/,
+              name: 'vendor',
+              chunks: 'all'
+            }
           }
         };
       }
