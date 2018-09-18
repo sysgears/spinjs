@@ -116,12 +116,13 @@ Each builder has a name and a `stack` property at minimum. Builder properties re
 |backendUrl|URL to a REST/GraphQL API of the application endpoint(http://localhost:8080 by default) - deprecated use `defines` and `waitOn` instead|
 |waitOn|URL in `wait-on` npm package format to await for before emitting compiled code. This is useful for example to force front-end wait until back-end will be compiled and started first in dev mode|
 |webpackDevPort|the local port used for Webpack Dev Server process to host web frontend files|
+|webpackDevHost|the domain name used for Webpack Dev Server. Use this to host the dev server in the cloud!|
+|webpackDevProtocol|the protool (http/https) for the Dev Server.|
 |buildDir|Output directory for built code|
 |backendBuildDir|Output directory for code targeted to run under Node.js (deprecated, use buildDir instead)|
 |frontendBuildDir|Output directory for code targeted to run in Web Browser and on mobile devices (deprecated, use buildDir instead)|
 |dllBuildDir|Output directory for Webpack DLL files used to speed up incremental builds|
 |dllExcludes|List of regexps to match against dependency package names that should be excluded from Webpack DLL|
-|backendUrl|Same as corresponding builder option|
 |stack|Same as corresponding builder option, but prepended to each builder stack|
 |ssr|Use server side rendering for the application (makes requiring web assets inside server code possible)|
 |webpackDll|Utilize Webpack DLLs to speed up incremental builds (default `true`)|
