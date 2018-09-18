@@ -426,9 +426,15 @@ const createConfig = (builder: Builder, spin: Spin) => {
         config.optimization.splitChunks = {
           cacheGroups: {
             commons: {
-              test: /[\\/]node_modules[\\/]/,
+              test: /[\\/]node_modules[\\/].*\.(js|mjs|ejs)$/,
               name: 'vendor',
               chunks: 'all'
+            },
+            styles: {
+              name: 'index',
+              test: /\.(css|sass|less|scss)$/,
+              chunks: 'all',
+              enforce: true
             }
           }
         };
