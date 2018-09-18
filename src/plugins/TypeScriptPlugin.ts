@@ -49,7 +49,7 @@ export default class TypeScriptPlugin implements ConfigPlugin {
         });
       }
 
-      if (!tsLoaderOpts.transpileOnly) {
+      if (!tsLoaderOpts.transpileOnly && tsChecker) {
         builder.config = spin.merge(builder.config, {
           plugins: [
             new (builder.require('fork-ts-checker-webpack-plugin'))({
