@@ -14,7 +14,7 @@ export default class TypeScriptPlugin implements ConfigPlugin {
     if (stack.hasAll(['ts', 'webpack'])) {
       const atl = builder.require.probe('awesome-typescript-loader');
       const tsChecker = builder.require.probe('fork-ts-checker-webpack-plugin');
-      let tsLoaderOpts;
+      let tsLoaderOpts: any = {};
       if (!!builder.require.probe('ts-loader')) {
         const verDigits = builder.require('ts-loader/package.json').version.split('.');
         const tsLoaderVer = verDigits[0] * 10 + +verDigits[1];
@@ -49,7 +49,7 @@ export default class TypeScriptPlugin implements ConfigPlugin {
         });
       }
 
-      if (tsChecker) {
+      if (!tsLoaderOpts.transpileOnly) {
         builder.config = spin.merge(builder.config, {
           plugins: [
             new (builder.require('fork-ts-checker-webpack-plugin'))({
