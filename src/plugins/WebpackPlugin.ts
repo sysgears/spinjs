@@ -388,11 +388,15 @@ const createConfig = (builder: Builder, spin: Spin) => {
 
       const webpackDevProtocol = builder.webpackDevProtocol ? builder.webpackDevProtocol : 'http';
       const webpackDevHost = builder.webpackDevHost ? builder.webpackDevHost : 'localhost';
+      let webpackDevPortStr = `:${webpackDevPort}`;
 
-      let webpackDevURL = `${webpackDevProtocol}://${webpackDevHost}`;
-      if (webpackDevProtocol !== 'https') {
-        webpackDevURL += `:${webpackDevPort}`;
+      if (webpackDevProtocol === 'http' && webpackDevPort === 80) {
+        webpackDevPortStr = '';
       }
+      if (webpackDevProtocol === 'https' && webpackDevPort === 443) {
+        webpackDevPortStr = '';
+      }
+      const webpackDevURL = `${webpackDevProtocol}://${webpackDevHost}${webpackDevPortStr}`;
 
       config = {
         ...config,
