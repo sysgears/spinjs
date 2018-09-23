@@ -42,7 +42,7 @@ export default class ReactNativePlugin implements ConfigPlugin {
 
       const webpack = builder.require('webpack');
 
-      const mobileAssetTest = /\.(bmp|gif|jpg|jpeg|png|psd|svg|webp|m4v|aac|aiff|caf|m4a|mp3|wav|html|pdf|ttf)$/;
+      const mobileAssetTest = /\.(bmp|gif|jpg|jpeg|png|psd|svg|webp|m4v|aac|aiff|caf|m4a|mp3|wav|html|pdf|ttf|otf)$/;
 
       const AssetResolver = builder.require('haul/src/resolvers/AssetResolver');
       const HasteResolver = builder.require('haul/src/resolvers/HasteResolver');
