@@ -34,7 +34,7 @@ export default class WebAssetsPlugin implements ConfigPlugin {
               }
             },
             {
-              test: /\.(ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
+              test: /\.(otf|ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
               use: {
                 loader: 'file-loader',
                 options: spin.createConfig(builder, 'file', {
