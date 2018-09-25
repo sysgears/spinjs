@@ -42,16 +42,6 @@ const createPlugins = (builder: Builder, spin: Spin) => {
   } else {
     const loaderOpts: any = { minimize: builder.minify };
     if (builder.minify) {
-      const uglifyOpts: any = { test: /\.(js|bundle)(\?.*)?$/i, cache: true, parallel: true };
-      if (builder.sourceMap) {
-        uglifyOpts.sourceMap = true;
-      }
-      if (stack.hasAny('angular')) {
-        // https://github.com/angular/angular/issues/10618
-        uglifyOpts.mangle = { keep_fnames: true };
-      }
-      const UglifyJsPlugin = builder.require('uglifyjs-webpack-plugin');
-      plugins.push(new UglifyJsPlugin(uglifyOpts));
       if (stack.hasAny('angular')) {
         loaderOpts.htmlLoader = {
           minimize: false // workaround for ng2
