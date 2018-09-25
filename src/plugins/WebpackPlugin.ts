@@ -40,15 +40,6 @@ const createPlugins = (builder: Builder, spin: Spin) => {
       }
     }
   } else {
-    const loaderOpts: any = { minimize: builder.minify };
-    if (builder.minify) {
-      if (stack.hasAny('angular')) {
-        loaderOpts.htmlLoader = {
-          minimize: false // workaround for ng2
-        };
-      }
-    }
-    plugins.push(new webpack.LoaderOptionsPlugin(loaderOpts));
     if (webpackVer < 4) {
       plugins.push(new webpack.optimize.ModuleConcatenationPlugin());
     }
