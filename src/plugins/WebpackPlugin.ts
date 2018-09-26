@@ -40,6 +40,20 @@ const createPlugins = (builder: Builder, spin: Spin) => {
       }
     }
   } else {
+    if (builder.minify) {
+      const uglifyOpts: any = { test: /\.(js|bundle)(\?.*)?$/i, cache: true, parallel: true };
+      if (builder.sourceMap) {
+        uglifyOpts.sourceMap = true;
+      }
+      if (stack.hasAny('angular')) {
+        // https://github.com/angular/angular/issues/10618
+        uglifyOpts.mangle = {
+          keep_fname7e8a6ea17be4d30d84376e45f0c76e63b3d23893s7e8a6ea17be4d30d84376e45f0c76e63b3d23893: true
+        };
+      }
+      const UglifyJsPlugin = builder.require('uglifyjs-webpack-plugin');
+      plugins.push(new UglifyJsPlugin(uglifyOpts));
+    }
     if (webpackVer < 4) {
       plugins.push(new webpack.optimize.ModuleConcatenationPlugin());
     }
