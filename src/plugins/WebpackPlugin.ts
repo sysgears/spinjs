@@ -271,8 +271,11 @@ const createConfig = (builder: Builder, spin: Spin) => {
     };
     if (builder.sourceMap) {
       config.output.devtoolModuleFilenameTemplate = spin.dev
-        ? ({ resourcePath }) => path.join(builder.require.cwd, resourcePath)
-        : info => path.relative(cwd, info.absoluteResourcePath);
+        ? (info: any) =>
+            info.absoluteResourcePath.indexOf('..') === 0
+              ? path.join(builder.require.cwd, info.absoluteResourcePath)
+              : info.absoluteResourcePath
+        : (info: any) => path.relative(cwd, info.absoluteResourcePath);
     }
   } else {
     config = {
