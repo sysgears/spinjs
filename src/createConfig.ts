@@ -52,7 +52,7 @@ const createConfig = (cwd: string, cmd: string, argv: any, builderName?: string)
   const spin = new Spin(cwd, cmd);
   const builderDiscoverer = new BuilderDiscoverer(spin, plugins, argv);
   let role = cmd;
-  if (cmd === 'exp') {
+  if (cmd === 'exp' || cmd === 'expo') {
     role = 'build';
   } else if (cmd === 'start') {
     role = 'watch';

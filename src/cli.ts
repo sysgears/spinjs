@@ -11,6 +11,7 @@ try {
     .command('build', 'compiles package for usage in production')
     .command(['watch', 'start'], 'launches package in development mode with hot code reload')
     .command('exp', 'launches server for exp and exp tool')
+    .command('expo', 'launches server for expo and expo tool')
     .command('test [mocha-webpack options]', 'runs package tests')
     .demandCommand(1, '')
     .option('c', {
@@ -26,13 +27,14 @@ try {
     .version(require('../package.json').version) // tslint:disable-line
     .argv;
 
-  const cmd = argv._[0];
+  const cmd: string = argv._[0];
   let config;
-  if (argv.help && cmd !== 'exp') {
+
+  if (argv.help && !(cmd === 'exp' || cmd === 'expo')) {
     yargs.showHelp();
   } else {
     const cwd = process.cwd();
-    if (['exp', 'build', 'test', 'watch', 'start'].indexOf(cmd) >= 0) {
+    if (['exp', 'expo', 'build', 'test', 'watch', 'start'].indexOf(cmd) >= 0) {
       config = createConfig(cwd, cmd, argv);
     }
 
