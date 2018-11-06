@@ -91,7 +91,14 @@ const runServer = (cwd, serverPath, nodeDebugger, logger) => {
           const nodeMinor = parseInt(nodeVersion[2], 10);
           nodeDebugOpt = nodeMajor >= 6 || (nodeMajor === 6 && nodeMinor >= 9) ? '--inspect' : '--debug';
           detectPort(9229).then(debugPort => {
-            spawnServer(cwd, [nodeDebugOpt + '=' + debugPort, serverPath], { serverPath, nodeDebugger }, logger);
+            // Bind the port to public ip in order to allow users to access the port for debugging when using docker.
+            const debugHost = isDocker() ? '0.0.0.0:' : '';
+            spawnServer(
+              cwd,
+              [nodeDebugOpt + '=' + debugHost + debugPort, serverPath],
+              { serverPath, nodeDebugger },
+              logger
+            );
           });
         });
       }
