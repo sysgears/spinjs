@@ -812,28 +812,38 @@ const setupExpoDir = (spin: Spin, builder: Builder, dir, platform) => {
 const deviceLoggers = {};
 
 const mirrorExpoLogs = (builder: Builder, projectRoot: string) => {
-  const { ProjectUtils } = builder.require('xdl');
+  const bunyan = builder.require('@expo/bunyan');
 
-  deviceLoggers[projectRoot] = minilog('expo-for-' + builder.name);
+  if (!bunyan._patched) {
+    deviceLoggers[projectRoot] = minilog('expo-for-' + builder.name);
 
-  if (!ProjectUtils.logWithLevel._patched) {
-    const origExpoLogger = ProjectUtils.logWithLevel;
-    ProjectUtils.logWithLevel = (projRoot, level, object, msg, id) => {
-      let json;
-      if (msg[0] === '{') {
-        json = JSON.parse(msg);
-      }
-      if (level === 'error') {
-        const info = object.includesStack ? json.message + '\n' + json.stack : json.message;
-        deviceLoggers[projRoot].log(info.replace(/\\n/g, '\n'));
-      } else if (json) {
-        deviceLoggers[projRoot].log(msg.message);
-      } else {
-        deviceLoggers[projRoot].log(msg);
-      }
-      return origExpoLogger.call(ProjectUtils, projRoot, level, object, msg, id);
+    const origCreate = bunyan.createLogger;
+    bunyan.createLogger = opts => {
+      const logger = origCreate.call(bunyan, opts);
+      const origChild = logger.child;
+      logger.child = (...args) => {
+        const child = origChild.apply(logger, args);
+        const patched = { ...child };
+        for (const name of ['info', 'debug', 'warn', 'error']) {
+          patched[name] = (...logArgs) => {
+            const [obj, msg] = logArgs;
+            if (!obj.issueCleared) {
+              let message;
+              try {
+                const json = JSON.parse(msg);
+                message = json.stack ? json.message + '\n' + json.stack : json.message;
+              } catch (e) {}
+              message = message || msg || obj;
+              deviceLoggers[projectRoot][name].apply(deviceLoggers[projectRoot], [message]);
+              child[name].call(child, logArgs);
+            }
+          };
+        }
+        return patched;
+      };
+      return logger;
     };
-    ProjectUtils.logWithLevel._patched = true;
+    bunyan._patched = true;
   }
 };
 
