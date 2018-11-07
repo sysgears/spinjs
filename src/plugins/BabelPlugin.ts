@@ -14,10 +14,11 @@ export default class BabelPlugin implements ConfigPlugin {
       (!builder.stack.hasAny('dll') || builder.stack.hasAny(['android', 'ios']))
     ) {
       if (builder.stack.hasAny(['babel', 'es6']) && !builder.stack.hasAny('dll')) {
+        const isBabel7 = builder.require.probe('@babel/core') && builder.require.probe('@babel/preset-flow');
         builder.config = spin.merge(
           {
             entry: {
-              index: ['babel-polyfill']
+              index: [isBabel7 ? '@babel/polyfill' : 'babel-polyfill']
             }
           },
           builder.config
@@ -37,7 +38,7 @@ export default class BabelPlugin implements ConfigPlugin {
       jsRule.use = {
         loader: builder.require.probe('heroku-babel-loader') ? 'heroku-babel-loader' : 'babel-loader',
         options: !!babelrc
-          ? { babelrc: true, cacheDirectory }
+          ? { babelrc: true, cacheDirectory, rootMode: 'upward-optional' }
           : spin.createConfig(builder, 'babel', {
               babelrc: false,
               cacheDirectory,

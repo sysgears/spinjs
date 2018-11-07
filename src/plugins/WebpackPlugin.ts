@@ -257,7 +257,12 @@ const createConfig = (builder: Builder, spin: Spin) => {
       ...config,
       target: 'node',
       externals: (context, request, callback) => {
-        if (request.indexOf('webpack') < 0 && request.indexOf('babel-polyfill') < 0 && !request.startsWith('.')) {
+        if (
+          request.indexOf('webpack') < 0 &&
+          request.indexOf('babel-polyfill') < 0 &&
+          request.indexOf('@babel/polyfill') < 0 &&
+          !request.startsWith('.')
+        ) {
           const fullPath = builder.require.probe(request, context);
           if (fullPath) {
             const ext = path.extname(fullPath);
