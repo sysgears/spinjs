@@ -1,3 +1,4 @@
+import * as fs from 'fs';
 import { Builder } from '../Builder';
 import { ConfigPlugin } from '../ConfigPlugin';
 import Spin from '../Spin';
@@ -52,28 +53,15 @@ export default class AngularPlugin implements ConfigPlugin {
       });
 
       if (!stack.hasAny('dll') && stack.hasAny('web')) {
-        builder.config = spin.merge(
-          {
-            entry: {
-              index: [require.resolve('./angular/angular-polyfill.js')]
-            }
-          },
-          builder.config
-        );
-
-        const { CheckerPlugin } = builder.require('awesome-typescript-loader');
-
+        /**
+         * Creating a virtual file for webpack in memory in the desired path inside the project
+         *
+         * Required for local testing
+         */
+        const VirtualModules = builder.require('webpack-virtual-modules');
+        const polyfillCode = fs.readFileSync(require.resolve('./angular/angular-polyfill.js')).toString();
         builder.config = spin.merge(builder.config, {
-          module: {
-            rules: [
-              {
-                test: /\.html$/,
-                loader: 'html-loader',
-                options: spin.createConfig(builder, 'html', {})
-              }
-            ]
-          },
-          plugins: [new CheckerPlugin()]
+          plugins: [new VirtualModules({ 'node_modules/@virtual/angular-polyfill.js': polyfillCode })]
         });
       }
     }
