@@ -1,5 +1,3 @@
-import * as path from 'path';
-
 import { Builder } from '../Builder';
 import { ConfigPlugin } from '../ConfigPlugin';
 import Spin from '../Spin';
@@ -48,9 +46,7 @@ export default class AngularPlugin implements ConfigPlugin {
              * It's necessary to remove the @angular part and fix the issue by enabling
              * the proper module.rules.Rule for @angular/core/*.js files(see above).
              */
-            /angular[\\\/]core/,
-            path.join(builder.require.cwd, 'src'),
-            {} // a map of your routes
+            /angular[\\\/]core/
           )
         ]
       });
