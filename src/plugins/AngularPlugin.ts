@@ -61,8 +61,26 @@ export default class AngularPlugin implements ConfigPlugin {
         const VirtualModules = builder.require('webpack-virtual-modules');
         const polyfillCode = fs.readFileSync(require.resolve('./angular/angular-polyfill.js')).toString();
         builder.config = spin.merge(builder.config, {
+          module: {
+            rules: [
+              {
+                test: /\.html$/,
+                loader: 'html-loader',
+                options: spin.createConfig(builder, 'html', {})
+              }
+            ]
+          },
           plugins: [new VirtualModules({ 'node_modules/@virtual/angular-polyfill.js': polyfillCode })]
         });
+
+        builder.config = spin.merge(
+          {
+            entry: {
+              index: ['@virtual/angular-polyfill']
+            }
+          },
+          builder.config
+        );
       }
     }
   }
