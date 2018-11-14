@@ -30,7 +30,7 @@ export default class TypeScriptPlugin implements ConfigPlugin {
 
       const jsRuleFinder = new JSRuleFinder(builder);
       const tsRule = jsRuleFinder.findAndCreateTSRule();
-      tsRule.test = /^(?!.*[\\\/]node_modules[\\\/]).*\.ts$/;
+      tsRule.test = /\.ts$/;
       tsRule.use = addParalleLoaders(builder, spin, [
         atl
           ? {
