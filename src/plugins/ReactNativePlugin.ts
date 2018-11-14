@@ -75,7 +75,7 @@ export default class ReactNativePlugin implements ConfigPlugin {
               .pop()
               .slice(0, -1)
         ),
-        exclude: /node_modules\/(?!react-native.*|@expo|expo|lottie-react-native|haul|pretty-format|react-navigation|antd-mobile-rn)$/,
+        exclude: /node_modules[\\\/](?!react-native.*|@module|@expo|expo|lottie-react-native|haul|pretty-format|react-navigation|antd-mobile-rn)$/,
         use: {
           loader: builder.require.probe('heroku-babel-loader') ? 'heroku-babel-loader' : 'babel-loader',
           options: spin.createConfig(
