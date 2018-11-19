@@ -131,7 +131,7 @@ Each builder has a name and a `stack` property at minimum. Builder properties re
 |cache|One of `true`, `false`, `'auto'`, `'auto'` enables Babel and other caching only during development, `true` enables caching for production builds too, `false` disables caching (default: `'auto'`)|
 |frontendRefreshOnBackendChange|Trigger web frontend refresh when backend code changes|
 |persistGraphQL|Generate and use Apollo persistent GraphQL queries|
-|devProxy|Proxy all unknown requests from front-end running on Webpack during development to back-end|
+|devProxy|Proxy all unknown requests from front-end running on Webpack during development to back-end. One of `true`, `false` or `'http://proxy_url:proxy_port'`, `true` is the same as `'http://localhost:8080'`, default: `false`|
 |profile|Generate builder profiling data for usage in Chrome Performance tab|
 |writeStats|Write `stats.json` to disk, default: `false`|
 |nodeDebugger|To enable or disable node debugger, default: `true`|
