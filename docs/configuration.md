@@ -1,17 +1,29 @@
 # SpinJS Configuration
 
-For SpinJS to work, it's enough to install the project dependencies, add [three SpinJS scripts] to the `package.json`
-file, and run a script &ndash; SpinJS will automatically configure, build, and run the project for you.
+For SpinJS to work, it's enough to install the project dependencies, add [a couple of SpinJS scripts] to the
+`package.json` file, and run the project &ndash; SpinJS will automatically configure, build, and run the project for
+you.
 
 However, if you want more control over how SpinJS builds your project, you can add your own configurations.
 
-You can configure SpinJS in three ways: in `package.json`, `.spinrc.json`, or `.spinrc.js`. Admittedly, the most
-convenient way for configuring SpinJS is using a `.spinrc.js` file (or multiple files if your project has several
-independent packages). You should save this file under the project or package root directory.
+You can configure SpinJS in three ways: 
 
-If you decide to configure SpinJS in `.spinrc.json` or `package.json`, then you need to add the `spin` property, which
-will point to the configuration object. If you create configurations in two files, such as `package.json` and
-`.spinrc.js`, SpinJS will merge the configurations automatically.
+* `package.json`
+* `.spinrc`
+* `.spinrc.json`
+* `.spinrc.js`
+
+We recommend using the `.spinrc.js` file to configure SpinJS as this way you get the most flexibility. For example, you
+can run additional checks before building the project (throughout this document we'll use `.spinrc.js` file to give 
+examples). 
+
+We also recommend using separate `.spinrc.js` files for each independent package in your project. But you can freely
+create just one root `.spinrc.js` and use the [`options`](#options) property to specify common configurations for all 
+the builders that you create.
+
+If you decide to configure SpinJS in `.spinrc`, `.spinrc.json` or `package.json`, then you need to add the `spin` 
+property, which will point to the configuration object. If you create configurations in two files, such as 
+`package.json` and `.spinrc.js`, SpinJS will merge the configurations automatically.
 
 ## SpinJS Configuration File
 
@@ -39,11 +51,6 @@ const config = {
   }
 };
 ```
-
-If your project has separate packages &ndash; client, server, and mobile, then each package should have its own SpinJS
-configuration file with its particular setup. You can view this approach implemented in [Apollo Universal Starter Kit].
-
-Besides the config,
 
 The SpinJS `config` object accepts the following properties:
 
@@ -80,7 +87,7 @@ The SpinJS `config` object accepts the following properties:
 
 ## Supported Technology Stacks
 
-SpinJS supports the following platforms, which you must specify in the `config.options.stack` property in 
+SpinJS supports the following platforms, which you must specify in the `config.options.stack` property in
 `.spinrc.js`:
 
 * `web`, targets the code for the web platform (the client-side applications)
@@ -603,7 +610,6 @@ const config = {
 ```
 
 [three SpinJS scripts]: https://github.com/sysgears/spinjs/blob/master/docs/scripts.md
-[apollo universal starter kit]: https://github.com/sysgears/apollo-universal-starter-kit
 [spin with `-v` option]: https://github.com/sysgears/spinjs/blob/master/README.md
 [`webpack-merge` strategies documentation]: https://github.com/survivejs/webpack-merge#merging-with-strategies
 [wait-on]: https://www.npmjs.com/package/wait-on

@@ -1,6 +1,6 @@
 # SpinJS Scripts
 
-SpinJS provides four commands, which you can run with options. 
+SpinJS provides four commands, which you can run with options.
 
 ## `spin watch`
 
@@ -12,9 +12,10 @@ spin watch
 
 ## `spin build`
 
-Builds your project for production. The project won't run, SpinJS will just generate and minify the build, and save the
-generated files under the `build` directory. The `build` directory is automatically generated under the current working
-directory. To change the `build` directory, consult the [configuration] guide. 
+Builds your project for production (the webpack's `mode` property is set to `'production'`; the build code is minified).
+The project won't run, SpinJS will just generate and minify the build, and save the generated files under the `build`
+directory. The `build` directory is automatically generated under the current working directory. To change the `build`
+directory, consult the [configuration] guide.
 
 ```bash
 spin build
@@ -22,7 +23,7 @@ spin build
 
 ## `spin start`
 
-Builds your project for production and run the project in the browser. The output files are uglified. 
+Builds your project for production and runs the project in the browser. The code is minified.
 
 ```bash
 spin start
@@ -34,13 +35,6 @@ Runs all the tests using `mocha-webpack`.
 
 ```bash
 spin test
-```
-
-You may also need to specify the directory with tests to run. For example, the following command will run all the tests
-in all directories under `src` for all `.spec.js` files:
-
-```bash
-spin test "src/**/*.spec.js"
 ```
 
 ## Running SpinJS Commands with the `-v` Option
@@ -57,4 +51,4 @@ For example, you can view the development configuration file by running this com
 spin watch -v
 ```
 
-[configuration]: https://github.com/sysgears/spinjs/blob/master/docs/features.md
+[configuration]: https://github.com/sysgears/spinjs/blob/master/docs/configuration.md

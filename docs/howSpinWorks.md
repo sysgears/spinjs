@@ -1,33 +1,36 @@
 # How SpinJS Works
 
-In this section, we give an overview of the configuration process as well as how webpack DLL files are used.
+In this section, we give an overview of how SpinJS works.
 
 ## SpinJS Thought Process
 
-In short, here are the stages of how SpinJS thinks:
+In short, here is how SpinJS thinks:
 
-1. Analyzing the dependencies.
-2. Building the configuration for found dependencies.
-3. Merging the configuration for a dependency into the global webpack configuration.
+1. It analyzes the project dependencies.
+2. It builds the configuration for found dependencies.
+3. It merges the dependency configuration into the global project configuration.
 
-### #1 Analyzing the dependencies
+### #1 Analyzing the Dependencies
 
-When you run your project with `spin watch`, SpinJS reads the contents of the project's `package.json` file and 
-recursively analyzes the project dependencies (the project dependencies and the dependencies of dependencies). 
+When you run your project with `spin watch`, SpinJS reads the contents of the project's `package.json` file and
+recursively analyzes the project dependencies (the project dependencies and the dependencies of dependencies).
 
-SpinJS builds an internal model of the project, using which it will be able to understand what technologies are used in 
+SpinJS builds an internal model of the project, using which it will be able to understand what technologies are used in
 the project.
 
-### #2 Building the configuration
+### #2 Building the Configuration
 
-Once the list of dependencies is created, SpinJS selects the known dependencies and generates webpack configuration for 
-them. For example, if you install Express, SpinJS will understand that you need a configuration for an Express server 
-application. Similarly, if you've installed the `react-native` library, SpinJS will configure a React Native mobile app 
+Once the list of dependencies is created, SpinJS selects the known dependencies and generates webpack configuration for
+them. For example, if you install Express, SpinJS will understand that you need a configuration for an Express server
+application. Similarly, if you've installed the `react-native` library, SpinJS will configure a React Native mobile app
 project.
 
-To generate webpack configurations, SpinJS uses [plugins] for each technology. Each plugin knows only about its own 
-technology that SpinJS found in the project. The plugin analyzes the entire list of technologies to find out if it needs
-to generate a webpack configuration for them. 
+To generate the webpack configurations for all known technologies, SpinJS uses [plugins]. Each plugin knows only about
+its own technology that SpinJS found in the project. SpinJS plugins also understand for what environment &ndash;
+development, production, or test &ndash; the configuration must be generated.
+
+Internally, each plugin analyzes the entire list of technologies to find out if it needs to generate a webpack
+configuration for them.
 
 For example, SpinJS has a plugin for React and webpack, which works like this:
 
@@ -46,8 +49,8 @@ export default class ReactPlugin implements ConfigPlugin {
 > The second check `!stack.hasAny('dll')` is necessary to prevent generating webpack configuration for React again. The
 generated webpack DLL files will be used to create a build. Read more about [webpack DLL](#webpack-dll).
 
-Basically, if you include the configuration below, `ReactPlugin` will understand that it needs to generate code for the 
-React application:
+If you use the SpinJS configuration below, `ReactPlugin` will understand that it needs to generate configs for the React
+application:
 
 ```js
 const config = {
@@ -63,25 +66,21 @@ module.exports = config;
 
 ### #3 Merging the configurations
 
-The generated configuration for each technology is merged into the main configuration using webpack-merge to ensure that 
-the global webpack configuration is created without conflicts. 
-
-Each SpinJS plugin knows how to create a part of webpack configuration for a specific technology. Each plugin also 
-understands for what environment the configuration must be generated: for development or for production, or whether you
-need to compile webpack DLL files.
+The generated configuration for each technology is merged into the main configuration using webpack-merge to ensure that
+the global webpack configuration is created without conflicts.
 
 ## Webpack DLL
 
-Webpack DLL files is a bundle that's get generated from the runtime dependencies of the project. In other words, SpinJS 
-generates the bundle only once. And then, if you change the project code, the incremental bundle is created, but 
-webpack does _not_ re-compile all the dependencies again. Using webpack DLL files increases the speed of creating 
-incremental builds.
+Webpack DLL files comprise a bundle that's get generated from the runtime dependencies of the project. In sane words,
+SpinJS generates the project bundle only once. Then, when you change the project code and an incremental build is
+created, webpack does _not_ re-compile all the dependencies again, which helps to drastically increase the speed of
+creating incremental builds.
 
-You can consider webpack DLL files as cache for your builds in development mode. In other words, SpinJS is able to 
-generate code and also cache the code to increase the speed of the next build.
+You can consider webpack DLL files as the cache for your builds in development mode, and SpinJS leverages the power of
+using webpack DLLs.
 
 ## Current Working Directory
 
-SpinJS recursively reads the configurations in `.spinrc.js` files in all the child directories. When a configuration in 
-each child directory is read or a builder is executed, the current working directory is set to point to this same 
+SpinJS recursively reads the configurations in `.spinrc.js` files in all the child directories. When a configuration in
+each child directory is read or a builder is executed, the current working directory is set to point to this same
 directory. This scheme of operation should be compatible to all 3rd party tools.

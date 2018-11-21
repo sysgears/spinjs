@@ -1,26 +1,46 @@
 # Concepts
 
-In this section, you'll know more about SpinJS [builders](#builders) and [plugins](#plugins).
+SpinJS comes with two key concepts &ndash; [builders](#builders) and [plugins](#plugins).
 
 ## Builders
 
-The key SpinJS concept is **_builders_**. A builder is just an object that contains the configurations for a specific 
-platform. 
+A **builder** in SpinJS is just an object that contains the configurations for a specific platform &ndash; web (a
+client-side application project), server, or mobile (Android or iOS). You can create a single builder with
+configurations for several platforms, or you can create separate builders for each platform and specify the common
+settings for all builders.
 
-You can configure SpinJS to have either one or multiple builders depending on the requirements of your project. SpinJS,
-depending on the configurations, can configure and launch multiple builders in parallel. If you specify the `stack` 
-property for your project, then only one builder will run.
+You can specify the builder settings in the following files in the `builders` property:
 
-If you need to specify multiple builders, use the following configurations in `package.json`:
+* `.spinrc`
+* `.spinrc.js`
+* `.spinrc.json`
+* `package.json`
+
+The `.spinrc.json`, `.spinrc`, or `.spinrc.js` files must be located in the root project directory next to
+`package.json`. If you're using separate packages, you can specify the builder properties in the package root.
+
+The following example shows how you can add a builder into a `package.json` file:
+
+```json
+{
+  "spin": "webpack:babel:apollo:server"
+}
+```
+
+The configuration above will tell SpinJS that you want to build a server project with webpack, Babel, and Apollo
+(GraphQL).
+
+You can configure SpinJS to set up and launch multiple builders in parallel. For that, you can use the property
+`builders`:
 
 ```json
 {
     "spin": {
         "builders": {
-            "backend": {
-                "stack": "webpack:babel:apollo:react:styled-components:sass:server"
+            "server": {
+                "stack": "webpack:babel:apollo:ts:server"
             },
-            "frontend": {
+            "web": {
                 "stack": "webpack:babel:apollo:react:styled-components:sass:web"
             },
             "mobile": {
@@ -33,59 +53,59 @@ If you need to specify multiple builders, use the following configurations in `p
 
 ## Plugins
 
-SpinJS comes with many plugins that handle generation of webpack configurations for a technology. Each SpinJS plugin 
-tries to handle the subset of technologies in the builder stack to configure build tools usually used for this stack the 
-best way.
+SpinJS comes with many plugins that handle generation of webpack configurations. Each SpinJS plugin is responsible for
+its own subset of technologies that you specified in the stack.
 
-### Webpack DLL
+For instance, if you're building a React application for the web platform, it's likely you're using the following stack:
 
-DLL Webpack is a bundle that's get generated from runtime dependencies of the project. In other words, SpinJS generates 
-the bundle only once. And then, if you changes the project code, the incremental bundle is created, but webpack doesn't
-re-compiles all the dependencies again. 
+* React
+* Babel
+* Webpack
+* Some CSS preprocessor such as Sass
 
-You can consider webpack DLL files as cache for your builds in development mode. In other words, SpinJS is able to 
-generate code and also cache the code to increase the speed of the next build.
+Each of the mentioned library is managed by it's own plugin. For example, to handle React, the SpinJS plugin
+`ReactPlugin` configures webpack for you; similarly, `BabelPlugin` handles the Babel settings, and so on.
 
-SpinJS also tries to use various caching mechanisms depending on the tools and technologies used in your project. All
-this functionality is broken into multiple plugins.
+Currently, SpinJS provides the following plugins:
 
-There are several built-in plugins supplied with `spinjs`. External plugins can be specified inside
-`options -> plugins` property.
+* AngularPlugin
+* ApolloPlugin
+* BabelPlugin
+* CssProcessorPlugin
+* FlowRuntimePlugin
+* I18NextPlugin
+* ReactHotLoaderPlugin
+* ReactNativePlugin
+* ReactNativeWebPlugin
+* ReactPlugin
+* StyledComponentsPlugin
+* TCombPlugin
+* TypeScriptPlugin
+* VuePlugin
+* WebAssetsPlugin
+* WebpackPlugin
+
+You can add any external plugins can be specified inside the `options.plugins` property in `.spinrc.js`.
 
 ## Building React Native-based Mobile Apps
 
-Besides configuring webpack for server and client applications, SpinJS can also build the React Native bundles for 
+Besides configuring webpack for server and client applications, SpinJS can also build the React Native bundles for
 mobile apps.
 
-Building bundles for React Native apps is a non-trivial task for SpinJS: our build tool go against the flow in that it
-uses _webpack_ for React Native apps instead of the "industrial standard" &ndash; the [Metro bundler], yet another tool 
-created by Facebook. The most complex chunk of SpinJS functionality is replacing Metro for React Native apps and using 
-webpack instead.
+Building bundles for React Native apps is a non-trivial task, as we go against the flow in this regard:
+**SpinJS uses _webpack_ for React Native apps instead of the "standard" bundler &ndash; [Metro] by Facebook**. The most
+complex chunk of SpinJS functionality is actually replacing Metro for React Native apps and using webpack instead.
 
-Metro is a replacement for webpack and can be used _only_ for React Native, which creates several issues: 
+Metro is a dedicated bundler for React Native apps and it aims to replace webpack. However, using Metro and webpack for
+building Universal JavaScript applications creates the following issues:
 
-* Because we often create JavaScript applications that work for web, server, and mobile platforms at the same time 
-(recall the Universal JavaScript concept), we're forced to learn the specifics of yet another bundler besides webpack.
-* We're forced to write our code differently for the web, server, and mobile platforms if using different bundlers.
-* Metro restricts you in what you can configure compared to webpack.
+* Because we often create JavaScript applications that work for web, server, and mobile platforms at the same time
+(recall the [Universal JavaScript] concept), we're forced to learn the specifics of yet another bundler besides webpack.
+* We're forced to write our code differently for the web, server, and mobile platforms if we use different bundlers.
+* Metro restricts you in how you can configure the project as compared to webpack.
 
-This is when SpinJS is useful: SpinJS allows you to write code for all the platforms &ndash; server, web, _and mobile_ 
-&ndash; the same way and use the same build tool for all of them.
+SpinJS, however, allows you to write code for all the platforms &ndash; server, web, _and mobile_ &ndash; the same way
+and use the same build tool for all of them.
 
-## Current Working Directory
-
-SpinJS recursively reads the configurations in `.spinrc.js` files in all the child directories. When a configuration in 
-each child directory is read or a builder is executed, the current working directory is set to point to this same 
-directory. This scheme of operation should be compatible to all 3rd party tools.
-
-## Profiling builders
-
-To troubleshoot builder performance set `profile: true` option on the builder. This will generate
-`profileEvents.json` file inside `build` dir. In order to view the profile file:
-  - Go to Chrome, open `DevTools`, and go to the `Performance tab` (formerly Timeline).
-  - Drag and drop generated file `profileEvents.json` into the profiler.
-
-It will then display timeline stats and calls info.
-
-[metro bundler]: https://facebook.github.io/metro/
-[`webpack-merge` strategies documentation]: https://github.com/survivejs/webpack-merge#mergestrategy-field-prependappendreplaceconfiguration-configuration
+[metro]: https://facebook.github.io/metro/
+[universal javascript]: https://cdb.reacttraining.com/universal-javascript-4761051b7ae9
