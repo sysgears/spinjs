@@ -1,47 +1,42 @@
-# Spin &mdash; The Build Tool That Doesn't Need Build Rules
+# SpinJS
 
 [![Join the chat at https://gitter.im/sysgears/spinjs](https://badges.gitter.im/sysgears/spinjs.svg)](https://gitter.im/sysgears/spinjs?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![npm version](https://badge.fury.io/js/spinjs.svg)](https://badge.fury.io/js/spinjs) [![Twitter Follow](https://img.shields.io/twitter/follow/sysgears.svg?style=social)](https://twitter.com/sysgears)
 
 ## Description
 
-Spin is an easy-to-use JavaScript library that creates project bundles for development, production, and testing. Spin  
-relieves you from the pains of configuring your project with [webpack] for web, server, and mobile applications so you 
-can focus on the actual development. 
+SpinJS is a JavaScript library that creates project bundles for development, production, and testing. SpinJS relieves 
+you from the pains of configuring your project with [webpack] for web, server, and native mobile applications so you can 
+focus on the actual development.
 
-How does Spin work? In the simplest terms, Spin understands what dependencies you installed for your JavaScript project
-by reading the `package.json` file and then configures them using custom [plugins]. 
+In the simplest terms, SpinJS understands what dependencies you installed for your JavaScript project by reading the 
+`package.json` file and then configures the technologies it knows about using custom [plugins].
 
-Spin does its best to provide you with an advanced build setup using the minimal information that you provide about 
-your technology stack while still giving you the possibility to further configure every aspect of how the project gets 
-built. 
+SpinJS does its best to provide you with an advanced build setup using the minimal information that you provide about
+your technology stack while still giving you the possibility to further configure every aspect of how the project gets
+built.
 
-Although Spin uses webpack to build your code for all the platforms &ndash; web, server, and mobile, you don't really 
-need to know anything about webpack (unless you want Spin to do something specific for your project).
-
-Spin is different from similar build tools in that it doesn't tie you to a specific framework. And Spin doesn't lock you 
-out from the generated configurations. 
+SpinJS is different from similar build tools in that it doesn't tie you to a specific framework. And SpinJS doesn't lock 
+you out from the generated configurations.
 
 ## Installation
 
-Install Spin in development dependencies using Yarn (use `-D` or `--dev` option):
+Install SpinJS in development dependencies of your project using Yarn:
 
 ```bash
 yarn add spinjs --dev
-yarn add spinjs -D
 ```
 
-Alternately, you can use NPM with `--save-dev` or `-D` option:
+Alternately, you can use NPM:
 
 ```bash
 npm install spinjs --save-dev
-npm install spinjs -D
 ```
 
 ## Getting Started
 
-To start using Spin, you only need to create a basic project and then install the necessary dependencies. Finally, add a 
-few [Spin scripts] to your `package.json` like this:
+To start using SpinJS, you only need to create a basic project and then install the necessary dependencies. Finally, add
+a few [SpinJS scripts] to your `package.json` like this:
 
 ```json
 {
@@ -62,12 +57,12 @@ yarn watch
 npm run watch
 ```
 
-SpinJS will [build your project for development] and launch it in the webpack `watch` mode. You can start changing your 
+SpinJS will [build your project for development] and launch it in the webpack `watch` mode. You can start changing your
 project code, and the bundle will be automatically reloaded using the Hot Module Replacement plugin.
 
 ## SpinJS Documentation
 
-You can follow to the [documentation] to learn more about Spin.
+You can follow to the [documentation] to learn more about SpinJS.
 
 ## Community Support
 
@@ -76,7 +71,7 @@ You can follow to the [documentation] to learn more about Spin.
 
 ## Commercial Support
 
-The [SysGears] team provides advanced support for commercial partners. A commercial partner will have premium access to 
+The [SysGears] team provides advanced support for commercial partners. A commercial partner will have premium access to
 our team to get help with Spin. Contact us using [Skype] or via email **info@sysgears.com**.
 
 ## Contributors
@@ -88,7 +83,7 @@ Very many thanks to our contributors ([emoji key]):
 | :---: | :---: | :---: |
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
-This project follows the [all-contributors] specification. 
+This project follows the [all-contributors] specification.
 We welcome any contributions to the project!
 
 ## License
@@ -97,7 +92,7 @@ Copyright © 2018 [SysGears INC]. This source code is licensed under the [MIT] l
 
 [webpack]: https://webpack.js.org/
 [plugins]: https://github.com/sysgears/spinjs/blob/master/docs/concepts.md#plugins
-[spin scripts]: https://github.com/sysgears/spinjs/blob/master/docs/scripts.md
+[spinjs scripts]: https://github.com/sysgears/spinjs/blob/master/docs/scripts.md
 [build your project for development]: https://github.com/sysgears/spinjs/blob/master/docs/scripts.md#spin-watch
 [documentation]: https://github.com/sysgears/spinjs/blob/master/docs/
 [Gitter channel]: https://gitter.im/sysgears/spinjs
