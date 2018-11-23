@@ -12,9 +12,11 @@ spin watch
 
 ## `spin build`
 
-Builds your project for production (the webpack's `mode` property is set to `'production'`; the build code is minified).
-The project won't run, SpinJS will just generate and minify the build, and save the generated files under the `build`
-directory. The `build` directory is automatically generated under the current working directory. To change the `build`
+Builds your project for production. Internally, SpinJS sets the webpack's `mode` property to `'production'`, and the 
+build code gets minified.
+
+The project won't run! SpinJS will only generate and minify the build, and save the generated files under the `build`
+directory. The `build` directory is automatically created under the [current working directory]. To change the `build`
 directory, consult the [configuration] guide.
 
 ```bash
@@ -52,3 +54,4 @@ spin watch -v
 ```
 
 [configuration]: https://github.com/sysgears/spinjs/blob/master/docs/configuration.md
+[current working directory]: https://github.com/sysgears/spinjs/blob/docs/docs/howSpinWorks.md#current-working-directory

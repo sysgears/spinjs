@@ -15,15 +15,15 @@ In short, here is how SpinJS thinks:
 When you run your project with `spin watch`, SpinJS reads the contents of the project's `package.json` file and
 recursively analyzes the project dependencies (the project dependencies and the dependencies of dependencies).
 
-SpinJS builds an internal model of the project, using which it will be able to understand what technologies are used in
-the project.
+SpinJS builds an internal model of the project; with this model, SpinJS can understand what technologies are used in the 
+project.
 
 ### #2 Building the Configuration
 
-Once the list of dependencies is created, SpinJS selects the known dependencies and generates webpack configuration for
-them. For example, if you install Express, SpinJS will understand that you need a configuration for an Express server
-application. Similarly, if you've installed the `react-native` library, SpinJS will configure a React Native mobile app
-project.
+Once the list of dependencies is created, SpinJS selects the known dependencies and generates a webpack configuration 
+for them. For example, if you install Express, SpinJS will understand that you need a configuration for an Express 
+server application. Similarly, if you've installed the `react-native` library, SpinJS will configure a React Native 
+mobile app project.
 
 To generate the webpack configurations for all known technologies, SpinJS uses [plugins]. Each plugin knows only about
 its own technology that SpinJS found in the project. SpinJS plugins also understand for what environment &ndash;
@@ -71,13 +71,13 @@ the global webpack configuration is created without conflicts.
 
 ## Webpack DLL
 
-Webpack DLL files comprise a bundle that's get generated from the runtime dependencies of the project. In sane words,
-SpinJS generates the project bundle only once. Then, when you change the project code and an incremental build is
-created, webpack does _not_ re-compile all the dependencies again, which helps to drastically increase the speed of
-creating incremental builds.
+SpinJS leverages the power of using webpack DLLs with a simple idea in mind: to reduce the time of creating incremental
+builds. You can consider webpack DLL files as _the cache_ for your builds in development mode.
 
-You can consider webpack DLL files as the cache for your builds in development mode, and SpinJS leverages the power of
-using webpack DLLs.
+Webpack DLL files comprise a bundle that's get generated from the runtime dependencies of the project. Using sane words,
+SpinJS generates the project bundle only once and stores it in webpack DLL files. Then, when you change the project code 
+and an incremental build is created, webpack does _not_ re-compile all the dependencies again, and instead uses the 
+DLL files. In the end, this approach helps to drastically increase the speed of creating incremental builds.
 
 ## Current Working Directory
 

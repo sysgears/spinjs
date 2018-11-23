@@ -87,8 +87,7 @@ The SpinJS `config` object accepts the following properties:
 
 ## Supported Technology Stacks
 
-SpinJS supports the following platforms, which you must specify in the `config.options.stack` property in
-`.spinrc.js`:
+SpinJS supports the following platforms, which you must specify in the `config.options.stack` property in `.spinrc.js`:
 
 * `web`, targets the code for the web platform (the client-side applications)
 * `server`, targets the code for the server platform (the server-side applications)
@@ -106,14 +105,15 @@ You can add these option to either `package.json` or `.spinrc.js`:
 ```
 
 * If you use a `.spinrc.js` file, then add the platform to `config.builders.platform.stack` where `platform` must be
-replaced with the respective property. For example, if you're building your application for web, you can use the
-following `config`:
+replaced with the respective property &ndash; `web`, `server`, `android`, or `ios`. 
+
+For example, if you're building your application for the web platform, you can use the following `config`:
 
 ```js
 const config = {
   builders: {
     web: {
-      stack: ['web']
+      stack: ['web'] // You can specify the stack, for example, add "react", "es6", and "css" for a React application
     }    
   }
 }
@@ -123,10 +123,10 @@ const config = {
 
 ### `builders`
 
-`builders` is the main property in the `config` object. In the `builders` property, you can configure SpinJS for the
-platforms. Typically, `builders` contain at least one property, the platform such as `web`, `server`, `android`, `ios`,
-or `test`. But you can specify multiple builders. This is how you can configure SpinJS for
-the web platform and testing:
+`builders` is the main property in the `config` object. In the `builders` property, you can configure SpinJS for 
+different platforms. Typically, `builders` contain at least one property, the platform such as `web`, `server`, 
+`android`, `ios`, or `test`. But you can specify multiple builders. This is how you can configure SpinJS for the web 
+platform and testing:
 
 ```js
 const config = {
@@ -135,23 +135,8 @@ const config = {
       stack: ['web']
     },
     test: {
+      // ...
     }
-  }
-}
-```
-
-### `options`
-
-Allows you to set global configurations for all builders in the current SpinJS configuration file. SpinJS will copy the
-global options into each builder.
-
-Usage example:
-
-```js
-const config = {
-  builders: { /* Your builders */ },
-  options: {
-    /* Global options for all builders */
   }
 }
 ```
@@ -180,6 +165,9 @@ const config = {
   builders: {
     web: {
       buildDir: 'build/web'
+    },
+    server: {
+      buildDir: 'build/server'
     }
   }
 };
@@ -195,6 +183,21 @@ Enables or disables caching the build files. Accepts the following options:
 
 **Type**: `Boolean|String` <br />
 **Default**: `true`
+
+Usage example:
+
+```js
+const config = {
+  builders: {
+    web: {
+      cache: true
+    },
+    server: {
+      cache: false
+    }
+  }
+};
+```
 
 ### `defines`
 
@@ -222,7 +225,7 @@ const config = {
 
 ### `devProxy`
 
-Proxies all unknown requests from front end to back end in development mode.
+Proxies all unknown requests from the front end to the back end in development mode.
 
 **Type**: `Boolean` <br />
 **Default**: `true`
@@ -241,7 +244,7 @@ const config = {
 
 ### `dllBuildDir`
 
-Sets the output directory for the webpack DLL files, which are used to speed up the incremental builds.
+Sets the output directory for the webpack DLL files (which are used to speed up the incremental builds).
 
 Usage example:
 
@@ -273,8 +276,13 @@ Usage example:
 ```js
 const config = {
   builders: {
-    web: {
-      enabled: false // set to true to build the client-side code
+    react: {
+      stack: ['web', 'react', 'es6', 'webpack', 'babel'],
+      enabled: false
+    },
+    angular: {
+      stack: ['web', 'angular', 'ts', 'webpack'],
+      enabled: true
     }
   }
 }
@@ -301,7 +309,7 @@ const config = {
 
 ### `frontendBuildDir`
 
-**Deprecated**. Use `buildDir` instead.
+**Deprecated**. Use [`buildDir`](#builddir) instead.
 
 Sets the output directory for code targeted to run in the browser or on a mobile device.
 
@@ -383,6 +391,22 @@ const config = {
     }
   }
 };
+```
+
+### `options`
+
+Allows you to set global configurations for all builders in the current SpinJS configuration file. SpinJS will copy the
+global options into each builder.
+
+Usage example:
+
+```js
+const config = {
+  builders: { /* Your builders */ },
+  options: {
+    /* Global options for all builders */
+  }
+}
 ```
 
 ### `roles`
@@ -485,7 +509,7 @@ Usage example:
 const config = {
   builders: {
     web: {
-      stack: ['web', 'babel', 'react', 'css', 'sass']
+      stack: ['web', 'babel', 'react', 'es6', 'css', 'sass']
     }
   }
 }
@@ -497,7 +521,7 @@ Alternately, you can pass a string with technologies separated by colons:
 const config = {
   builders: {
     web: {
-      stack: 'web:babel:react:css:sass'
+      stack: 'web:babel:react:es6:css:sass'
     }
   }
 }
@@ -530,21 +554,38 @@ development mode.
 
 ### `webpackDevHost`
 
-Sets the domain name used for webpack-dev-server. Use this option only when you need to host the development server in
-the cloud!
+Sets the [webpack-dev-server host]. Use this option only when you need to host the development server in the cloud!
 
 Usage example:
 
 ```js
-
+const config = {
+  builders: {
+    web: {
+      webpackDevHost: '0.0.0.0'
+    }
+  }
+}
 ```
 
 ### `webpackDevPort`
 
-Sets the local port used by webpack-dev-server process to host the web front-end files.
+Sets the local port used by webpack-dev-server to host the files.
 
 **Type**: `Number` <br />
 **Default**: `8080`
+
+Usage example:
+
+```javascript
+const config = {
+  builders: {
+    web: {
+      webpackDevPort: 4000 // Your web application will run on this port
+    }
+  }
+}
+```
 
 ### `webpackDevProtocol`
 
@@ -613,3 +654,4 @@ const config = {
 [spin with `-v` option]: https://github.com/sysgears/spinjs/blob/master/README.md
 [`webpack-merge` strategies documentation]: https://github.com/survivejs/webpack-merge#merging-with-strategies
 [wait-on]: https://www.npmjs.com/package/wait-on
+[webpack-dev-server host]: https://webpack.js.org/configuration/dev-server/#devserver-host

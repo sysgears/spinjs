@@ -62,7 +62,12 @@ project code, and the bundle will be automatically reloaded using the Hot Module
 
 ## SpinJS Documentation
 
-You can follow to the [documentation] to learn more about SpinJS.
+You can follow to the [documentation] to learn more about SpinJS:
+
+* [Concepts]
+* [Configuration]
+* [How SpinJS works]
+* [Scripts]
 
 ## Community Support
 
@@ -95,11 +100,15 @@ Copyright © 2018 [SysGears INC]. This source code is licensed under the [MIT] l
 [spinjs scripts]: https://github.com/sysgears/spinjs/blob/master/docs/scripts.md
 [build your project for development]: https://github.com/sysgears/spinjs/blob/master/docs/scripts.md#spin-watch
 [documentation]: https://github.com/sysgears/spinjs/blob/master/docs/
-[Gitter channel]: https://gitter.im/sysgears/spinjs
-[GitHub issues]: https://github.com/sysgears/spinjs/issues
-[SysGears]: https://sysgears.com
+[concepts]: https://github.com/sysgears/spinjs/blob/master/docs/concepts.md
+[configuration]: https://github.com/sysgears/spinjs/blob/docs/master/docs/configuration.md
+[how spinjs works]: https://github.com/sysgears/spinjs/blob/master/docs/docs/howSpinWorks.md
+[scripts]: https://github.com/sysgears/spinjs/blob/master/docs/docs/scripts.md
+[gitter channel]: https://gitter.im/sysgears/spinjs
+[github issues]: https://github.com/sysgears/spinjs/issues
+[sysgears]: https://sysgears.com
 [skype]: http://hatscripts.com/addskype?sysgears
 [emoji key]: https://github.com/kentcdodds/all-contributors#emoji-key
 [all-contributors]: https://github.com/kentcdodds/all-contributors
-[SysGears INC]: http://sysgears.com
-[MIT]: LICENSE
+[sysgears inc]: http://sysgears.com
+[mit]: LICENSE
