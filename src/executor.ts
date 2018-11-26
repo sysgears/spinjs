@@ -248,7 +248,7 @@ const startServerWebpack = (spin, builder) => {
 
             if (builder.frontendRefreshOnBackendChange) {
               for (const module of stats.compilation.modules) {
-                if (module.built && module.resource && module.resource.split(/[\\\/]/).indexOf('server') >= 0) {
+                if (module.built && module.resource && module.resource.indexOf('server') >= 0) {
                   // Force front-end refresh on back-end change
                   logger.debug('Force front-end current page refresh, due to change in backend at:', module.resource);
                   process.send({ cmd: BACKEND_CHANGE_MSG });
