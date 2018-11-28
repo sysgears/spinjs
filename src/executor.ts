@@ -166,7 +166,9 @@ const startClientWebpack = (hasBackend, spin, builder) => {
   const configOutputPath = config.output.path;
 
   const VirtualModules = builder.require('webpack-virtual-modules');
-  const clientVirtualModules = new VirtualModules({ 'node_modules/backend_reload.js': '' });
+  const clientVirtualModules = new VirtualModules({
+    [path.join(builder.projectRoot, 'node_modules', 'backend_reload.js')]: ''
+  });
   config.plugins.push(clientVirtualModules);
   frontendVirtualModules.push(clientVirtualModules);
 
@@ -194,10 +196,13 @@ const startClientWebpack = (hasBackend, spin, builder) => {
 };
 
 let backendReloadCount = 0;
-const increaseBackendReloadCount = () => {
+const increaseBackendReloadCount = builder => {
   backendReloadCount++;
   for (const virtualModules of frontendVirtualModules) {
-    virtualModules.writeModule('node_modules/backend_reload.js', `var count = ${backendReloadCount};\n`);
+    virtualModules.writeModule(
+      path.join(builder.projectRoot, 'node_modules', 'backend_reload.js'),
+      `var count = ${backendReloadCount};\n`
+    );
   }
 };
 
@@ -1157,7 +1162,7 @@ const execute = (cmd: string, argv: any, builders: Builders, spin: Spin) => {
     process.on('message', msg => {
       if (msg.cmd === BACKEND_CHANGE_MSG) {
         debug(`Increase backend reload count in ${builder.id}`);
-        increaseBackendReloadCount();
+        increaseBackendReloadCount(builder);
       }
     });
 
