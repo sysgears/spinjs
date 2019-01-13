@@ -69,10 +69,15 @@ const createConfig = (cwd: string, cmd: string, argv: any, builderName?: string)
   for (const builderId of Object.keys(discoveredBuilders)) {
     const builder = discoveredBuilders[builderId];
     const stack = builder.stack;
-
-    if (builder.name !== builderName && (builder.enabled === false || builder.roles.indexOf(role) < 0)) {
+    if (builder.roles.indexOf(role) < 0) {
       continue;
     }
+
+    builder.enabled =
+      (builder.enabled && !argv.d) ||
+      (builder.enabled && argv.d && ![].concat(argv.d).some(regex => new RegExp(regex).test(builder.name))) ||
+      (!builder.enabled && argv.e && [].concat(argv.e).some(regex => new RegExp(regex).test(builder.name))) ||
+      builder.name === builderName;
 
     if (spin.dev && builder.webpackDll && !stack.hasAny('server') && !builderName) {
       const dllBuilder: Builder = { ...builder };
@@ -88,6 +93,10 @@ const createConfig = (cwd: string, cmd: string, argv: any, builderName?: string)
 
   for (const builderId of Object.keys(builders)) {
     const builder = builders[builderId];
+    if (!builder.enabled) {
+      continue;
+    }
+
     const overridesConfig = builder.overridesConfig || WEBPACK_OVERRIDES_NAME;
     const overrides = fs.existsSync(overridesConfig) ? builder.require('./' + overridesConfig) : {};
 

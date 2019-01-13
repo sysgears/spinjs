@@ -63,7 +63,7 @@ At the moment `spinjs` supports the following technologies, that can be specifie
 |ts|Transpile code from TypeScript to ECMAScript 5|
 |vue|Vue.js|
 |i18next|Loader to generate resources for ``i18next``|
-|angular|Angular 4|
+|angular|Angular 2+|
 |react|React|
 |react-native|React Native with Expo|
 |react-hot-loader|Use React Hot Loader during development|
