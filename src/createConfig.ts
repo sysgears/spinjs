@@ -74,9 +74,9 @@ const createConfig = (cwd: string, cmd: string, argv: any, builderName?: string)
     }
 
     builder.enabled =
-      (builder.enabled && !argv.d) ||
-      (builder.enabled && argv.d && ![].concat(argv.d).some(regex => new RegExp(regex).test(builder.name))) ||
-      (!builder.enabled && argv.e && [].concat(argv.e).some(regex => new RegExp(regex).test(builder.name))) ||
+      (builder.enabled !== false && !argv.d) ||
+      (builder.enabled !== false && argv.d && ![].concat(argv.d).some(regex => new RegExp(regex).test(builder.name))) ||
+      (builder.enabled === false && argv.e && [].concat(argv.e).some(regex => new RegExp(regex).test(builder.name))) ||
       builder.name === builderName;
 
     if (spin.dev && builder.webpackDll && !stack.hasAny('server') && !builderName) {
