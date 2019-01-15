@@ -4,7 +4,6 @@ import * as path from 'path';
 import * as url from 'url';
 
 import { Builder } from '../Builder';
-import BuilderDiscoverer from '../BuilderDiscoverer';
 import { ConfigPlugin } from '../ConfigPlugin';
 import Spin from '../Spin';
 

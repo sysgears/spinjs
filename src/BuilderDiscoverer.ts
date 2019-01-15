@@ -3,11 +3,10 @@ import { glob } from 'glob';
 import * as _ from 'lodash';
 import * as path from 'path';
 
-import { Builder, Builders } from './Builder';
+import { Builders } from './Builder';
 import { ConfigPlugin } from './ConfigPlugin';
 import ConfigReader from './ConfigReader';
 import Spin from './Spin';
-import Stack from './Stack';
 
 export default class BuilderDiscoverer {
   private configReader: ConfigReader;

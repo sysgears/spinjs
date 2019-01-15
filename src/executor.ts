@@ -1112,14 +1112,10 @@ const execute = (cmd: string, argv: any, builders: Builders, spin: Spin) => {
       prepareExpoPromise.then(() => {
         const workerBuilders = {};
 
-        let potentialWorkerCount = 0;
         for (const id of Object.keys(builders)) {
           const builder = builders[id];
           if (builder.stack.hasAny(['dll', 'test'])) {
             continue;
-          }
-          if (builder.cluster !== false) {
-            potentialWorkerCount++;
           }
         }
 
@@ -1129,8 +1125,12 @@ const execute = (cmd: string, argv: any, builders: Builders, spin: Spin) => {
             continue;
           }
 
-          if (potentialWorkerCount > 1 && !builder.cluster) {
-            const worker = cluster.fork({ BUILDER_ID: id, EXPO_PORTS: JSON.stringify(expoPorts) });
+          if (!builder.cluster) {
+            const worker = cluster.fork({
+              BUILDER_ID: id,
+              BUILDER_CONFIG_PATH: builder.configPath,
+              EXPO_PORTS: JSON.stringify(expoPorts)
+            });
             workerBuilders[worker.process.pid] = builder;
           } else {
             runBuilder(cmd, builder, platforms);

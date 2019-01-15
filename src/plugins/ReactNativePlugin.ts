@@ -4,6 +4,7 @@ import * as path from 'path';
 import { Builder } from '../Builder';
 import { ConfigPlugin } from '../ConfigPlugin';
 import Spin from '../Spin';
+import { excludeProjectModules } from './shared/JSRuleFinder';
 import JSRuleFinder from './shared/JSRuleFinder';
 import UPFinder from './shared/UPFinder';
 
@@ -75,7 +76,10 @@ export default class ReactNativePlugin implements ConfigPlugin {
               .pop()
               .slice(0, -1)
         ),
-        exclude: /node_modules[\\\/](?!react-native.*|@module|@expo|expo|lottie-react-native|haul|pretty-format|react-navigation|antd-mobile-rn)$/,
+        exclude: excludeProjectModules(
+          builder.projectRoot,
+          /(react-native.*|@expo|expo|lottie-react-native|haul|pretty-format|react-navigation|antd-mobile-rn)/
+        ),
         use: {
           loader: builder.require.probe('heroku-babel-loader') ? 'heroku-babel-loader' : 'babel-loader',
           options: spin.createConfig(

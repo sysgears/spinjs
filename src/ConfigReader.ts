@@ -2,28 +2,13 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as merge from 'webpack-merge';
 
-import { Builder, Builders } from './Builder';
+import { Builders } from './Builder';
 import { ConfigPlugin } from './ConfigPlugin';
 import createRequire from './createRequire';
 import EnhancedError from './EnhancedError';
 import inferConfig from './inferConfig';
 import Spin from './Spin';
 import Stack from './Stack';
-import upDirs from './upDirs';
-
-const getProjectRoot = (builder: Builder) => {
-  const pkgPathList = upDirs(builder.require.cwd, 'package.json');
-  let projectRoot;
-  for (const pkg of pkgPathList) {
-    if (fs.existsSync(pkg)) {
-      try {
-        JSON.parse(fs.readFileSync(pkg, 'utf8'));
-        projectRoot = path.dirname(pkg);
-      } catch (e) {}
-    }
-  }
-  return projectRoot;
-};
 
 export default class ConfigReader {
   private spin: Spin;
@@ -89,6 +74,7 @@ export default class ConfigReader {
       }
       const builderId = `${relativePath}[${builder.name}]`;
       builder.id = builderId;
+      builder.configPath = filePath;
       builders[builderId] = builder;
       // TODO: remove backendBuildDir, frontendBuildDir in 0.5.x
       builder.buildDir = builder.backendBuildDir || builder.frontendBuildDir ? undefined : builder.buildDir || 'build';
@@ -97,7 +83,6 @@ export default class ConfigReader {
       builder.webpackDll = typeof builder.webpackDll !== 'undefined' ? builder.webpackDll : true;
       builder.sourceMap = typeof builder.sourceMap !== 'undefined' ? builder.sourceMap : true;
       builder.minify = typeof builder.minify !== 'undefined' ? builder.minify : true;
-      builder.projectRoot = getProjectRoot(builder);
       builder.cache =
         typeof builder.cache === 'string' && builder.cache !== 'auto'
           ? builder.cache
