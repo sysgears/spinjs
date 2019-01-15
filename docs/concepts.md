@@ -1,14 +1,16 @@
 # Concepts
 
-SpinJS is based on several concepts. The key ideas in SpinJS are [builders](#builders), [plugins](#plugins), and the 
-[use of webpack](#building-react-native-mobile-apps) to create project builds not only for web and server applications,
-but for React Native mobile apps as well. 
+SpinJS comes with two key concepts &ndash; [builders](#builders) and [plugins](#plugins).
 
 ## Builders
 
-A **builder** in SpinJS is an object that contains platform configurations for your project. You can create a single 
-builder with configurations for several platforms, or you can create separate builders for each platform and specify the 
-common settings for all builders.
+A SpinJS **builder** is an object that contains configurations for a specific platform &ndash; client, server, or 
+mobile (Android or iOS), according to the application type you're developing. SpinJS automatically creates a builder 
+object for your project using the default configurations, so you don't need to configure SpinJS.
+ 
+However, if your project needs to be built for different platforms, for example, for the client and server, you need to 
+create a SpinJS configuration file and specify different settings for several builders. SpinJS also allows you to
+reuse the same configurations across multiple builders.
 
 You can specify the builder settings in the following files in the `builders` property:
 
@@ -28,48 +30,68 @@ The following example shows how you can add a builder into a `package.json` file
 }
 ```
 
-The configuration above will tell SpinJS that it needs to build a server project with webpack, Babel, and Apollo 
-(GraphQL).
+The configuration above will tell SpinJS that you want to build a server project with webpack, Babel, and Apollo.
 
 You can configure SpinJS to set up and launch multiple builders in parallel. For that, you can use the property
 `builders`:
 
 ```json
 {
-  "spin": {
-    "builders": {
-      "server": {
-        "stack": "webpack:babel:apollo:ts:server"
-      },
-      "web": {
-        "stack": "webpack:babel:apollo:react:styled-components:sass:web"
-      },
-      "mobile": {
-        "stack": "webpack:babel:apollo:react-native:styled-components:sass:ios"
-      }
+    "spin": {
+        "builders": {
+            "server": {
+                "stack": "webpack:babel:apollo:ts:server"
+            },
+            "web": {
+                "stack": "webpack:babel:apollo:react:styled-components:sass:web"
+            },
+            "mobile": {
+                "stack": "webpack:babel:apollo:react-native:styled-components:sass:ios"
+            }
+        }
     }
-  }
 }
 ```
 
-You can learn more about builders in a the [docs/concepts.md#builders] section.
+Otherwise, you can add a `.spinrc.js` file and configure several builders with various options there:
+
+```js
+// SpinJS configuration for multiple builders
+let config = {
+  builders: {
+    server: {
+      stack: "webpack:babel:apollo:ts:server",
+      enabled: true
+    },
+    web: {
+      stack: "webpack:babel:apollo:react:styled-components:sass:web",
+      enabled: true
+    },
+    mobile: {
+      stack: "webpack:babel:apollo:react-native:styled-components:sass:ios",
+      enabled: false
+    }
+  }
+};
+```
 
 ## Plugins
 
-SpinJS comes with many plugins that handle generation of webpack configurations. Each SpinJS plugin is responsible for
-its own subset of technologies that you specified in the stack.
+SpinJS comes with many plugins that handle generation of build configurations. Each SpinJS plugin is responsible for its 
+own subset of technologies that you specify in the stack.
 
 For instance, if you're building a React application for the web platform, it's likely you're using the following stack:
 
 * React
 * Babel
 * Webpack
-* Some CSS preprocessor such as Sass
+* Some CSS preprocessor
 
-Each of the mentioned library is managed by it's own plugin. For example, to handle React, the SpinJS plugin
-`ReactPlugin` configures webpack for you; similarly, `BabelPlugin` handles the Babel settings, and so on.
+Each of the mentioned dependency is managed by it's own plugin. For example, the SpinJS plugin `ReactPlugin` configures 
+webpack for React; similarly, `BabelPlugin` handles the Babel settings, `WebpackPlugin` handles the basic webpack 
+configurations, and so on.
 
-Currently, SpinJS provides the following plugins:
+Currently, SpinJS has the following plugins:
 
 * AngularPlugin
 * ApolloPlugin
@@ -88,30 +110,6 @@ Currently, SpinJS provides the following plugins:
 * WebAssetsPlugin
 * WebpackPlugin
 
-You can add any external plugins can be specified inside the `options.plugins` property in `.spinrc.js`.
+You can add your own external plugins by specifying them inside the [`plugins`] property in `.spinrc.js`.
 
-## Building React Native Mobile Apps
-
-Besides configuring webpack for server and client applications, SpinJS can also build the React Native bundles for
-mobile apps.
-
-Building bundles for React Native apps is a non-trivial task, as we go against the flow in this regard:
-**SpinJS uses _webpack_ for React Native apps instead of the "standard" bundler &ndash; [Metro] by Facebook**. 
-
-The most complex chunk of SpinJS functionality is actually replacing Metro for React Native apps and using webpack 
-instead.
-
-Metro is a dedicated bundler for React Native apps and it aims to replace webpack. However, using Metro and webpack for
-building Universal JavaScript applications creates the following issues:
-
-* Because we often create JavaScript applications that work for web, server, and mobile platforms at the same time
-(recall the [Universal JavaScript] concept), we're forced to learn the specifics of yet another bundler besides webpack.
-* We're forced to write our code differently for the web, server, and mobile platforms if we use different bundlers.
-* Metro restricts you in how you can configure the project as compared to webpack.
-
-SpinJS, however, allows you to write code for all the platforms &ndash; server, web, _and mobile_ &ndash; the same way
-and use the same build tool for all of them.
-
-[metro]: https://facebook.github.io/metro/
-[universal javascript]: https://cdb.reacttraining.com/universal-javascript-4761051b7ae9
-[docs/concepts.md#builders]: https://github.com/sysgears/spinjs/blob/master/docs/concepts.md#builders
+[`plugins`]: https://github.com/sysgears/spinjs/blob/master/docs/configuration.md#plugins

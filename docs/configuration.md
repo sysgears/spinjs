@@ -1,12 +1,11 @@
 # SpinJS Configuration
 
-For SpinJS to work, it's enough to install the project dependencies, add [a couple of SpinJS scripts] to the
-`package.json` file, and run the project &ndash; SpinJS will automatically configure, build, and run the project for
-you.
+For SpinJS to work, it's enough to install the project dependencies and run [SpinJS scripts] from the root of the 
+project &ndash; SpinJS will automatically configure, build, and run the project for you.
 
 However, if you want more control over how SpinJS builds your project, you can add your own configurations.
 
-You can configure SpinJS in three ways: 
+You can configure SpinJS in following files: 
 
 * `package.json`
 * `.spinrc`
@@ -14,16 +13,18 @@ You can configure SpinJS in three ways:
 * `.spinrc.js`
 
 We recommend using the `.spinrc.js` file to configure SpinJS as this way you get the most flexibility. For example, you
-can run additional checks before building the project (throughout this document we'll use `.spinrc.js` file to give 
-examples). 
+can run additional checks before building the project. Throughout this document we'll use `.spinrc.js` file to give 
+examples. 
 
-We also recommend using separate `.spinrc.js` files for each independent package in your project. But you can freely
-create just one root `.spinrc.js` and use the [`options`](#options) property to specify common configurations for all 
-the builders that you create.
+Depending on the structure of your project, you can create separate `.spinrc.js` files for each independent package (if 
+your project consists of several packages) or you can use just one root `.spinrc.js` file.
 
-If you decide to configure SpinJS in `.spinrc`, `.spinrc.json` or `package.json`, then you need to add the `spin` 
-property, which will point to the configuration object. If you create configurations in two files, such as 
-`package.json` and `.spinrc.js`, SpinJS will merge the configurations automatically.
+If you're using a single `.spinrc.js`, you can specify the [`options`](#options) property to give common configurations 
+for all the builders that you create.
+
+If you decide to configure SpinJS in `.spinrc`, `.spinrc.json` or `package.json`, then all the configurations must be 
+stored in the `spin` property (it simply points to the configuration object). If you create SpinJS configurations in 
+two files, for example, in `package.json` and `.spinrc.js`, then SpinJS will merge those configurations automatically.
 
 ## SpinJS Configuration File
 
@@ -34,30 +35,30 @@ must contain the configuration object with the following structure:
 const config = {
   builders: {
     web: {
-      // Configurations for client application
+      // Configurations for the client application
     },
     server: {
-      // Configurations for server application
+      // Configurations for the server application
     },
     android: {
-      // Configurations for mobile Android application
+      // Configurations for the mobile Android application
     },
     ios: {
-      // Configurations for mobile iOS application
+      // Configurations for the mobile iOS application
     },
     test: {
-      // Configurations for testing
+      // Configurations for the testing
     }
   }
 };
 ```
 
-The SpinJS `config` object accepts the following properties:
+The SpinJS `config` object can have the following properties:
 
 * [`builders`](#builders)
 * [`options`](#options)
-* [`backendBuildDir`](#backendbuilddir)
-* [`backendUrl`](#backendurl)
+* [`backendBuildDir`](#backendbuilddir) (deprecated)
+* [`backendUrl`](#backendurl) (deprecated)
 * [`buildDir`](#builddir)
 * [`cache`](#cache)
 * [`defines`](#defines)
@@ -66,7 +67,7 @@ The SpinJS `config` object accepts the following properties:
 * [`dllExcludes`](#dllexcludes)
 * [`enabled`](#enabled)
 * [`entry`](#entry)
-* [`frontendBuildDir`](#frontendbuilddir)
+* [`frontendBuildDir`](#frontendbuilddir) (deprecated)
 * [`frontendRefreshOnBackendChange`](#frontendrefreshonbackendchange)
 * [`minify`](#minify)
 * [`nodeDebugger`](#nodedebugger)
@@ -87,14 +88,15 @@ The SpinJS `config` object accepts the following properties:
 
 ## Supported Technology Stacks
 
-SpinJS supports the following platforms, which you must specify in the `config.options.stack` property in `.spinrc.js`:
+SpinJS supports the following platforms, which you need to specify in the `config.options.stack` property in 
+`.spinrc.js`:
 
-* `web`, targets the code for the web platform (the client-side applications)
-* `server`, targets the code for the server platform (the server-side applications)
-* `android`, targets the code for the Android mobile platform
-* `ios`, targets the code for the iOS mobile platform
+* `web`, targets the code for client-side applications
+* `server`, targets the code for server applications
+* `android`, targets the code for Android
+* `ios`, targets the code for iOS
 
-You can add these option to either `package.json` or `.spinrc.js`:
+You can add these options to either `package.json` or `.spinrc.js`:
 
 * `package.json`
 
@@ -104,7 +106,7 @@ You can add these option to either `package.json` or `.spinrc.js`:
 }
 ```
 
-* If you use a `.spinrc.js` file, then add the platform to `config.builders.platform.stack` where `platform` must be
+* If you use a `.spinrc.js` file, then add the platform to `config.builders.{platform}.stack` where `{platform}` must be
 replaced with the respective property &ndash; `web`, `server`, `android`, or `ios`. 
 
 For example, if you're building your application for the web platform, you can use the following `config`:
@@ -113,7 +115,7 @@ For example, if you're building your application for the web platform, you can u
 const config = {
   builders: {
     web: {
-      stack: ['web'] // You can specify the stack, for example, add "react", "es6", and "css" for a React application
+      stack: ['web'] // You can add "react", "es6", "css" to make the stack more specific
     }    
   }
 }
@@ -123,10 +125,11 @@ const config = {
 
 ### `builders`
 
-`builders` is the main property in the `config` object. In the `builders` property, you can configure SpinJS for 
-different platforms. Typically, `builders` contain at least one property, the platform such as `web`, `server`, 
-`android`, `ios`, or `test`. But you can specify multiple builders. This is how you can configure SpinJS for the web 
-platform and testing:
+`builders` is the main property in the SpinJS `config` object. In the `builders` property, you can configure SpinJS for 
+different platforms. Typically, `builders` contain at least one property &ndash; the platform such as `web`, `server`, 
+`android`, `ios`, or `test`. You can specify multiple builders under the `builders` property. 
+
+This is how you can configure SpinJS for the web platform and testing:
 
 ```js
 const config = {
@@ -156,7 +159,7 @@ Sets the URL to a REST or GraphQL API endpoint. Defaults to [http://localhost:80
 ### `buildDir`
 
 Sets the path to the output directory for the build code for a specific builder. The directory `build` is automatically
-generated. The path is resolved from the current directory where `.spinrc.js` is located.
+generated. The path is resolved from the current working directory where `.spinrc.js` is located.
 
 Usage example:
 
@@ -202,10 +205,10 @@ const config = {
 ### `defines`
 
 Assigns the environment variables and various global properties such as the server port, API keys, and other properties
-that will be available at compile time to the generated code.
+that will be available at compile time to the generated code. You can use whatever names for these properties.
 
-Usage example. The following example sets the development mode to true in the `__DEV__` property; the back-end API
-endpoint `__API_URL__`; the website URL, and the Stripe publishable key:
+Usage example. The following example sets the development mode to `true` in the `__DEV__` property; the back-end API
+endpoint `__API_URL__` to `http://localhost:8080/graphql`; the website URL, and the Stripe publishable key:
 
 ```javascript
 const config = {
@@ -236,7 +239,7 @@ Usage example:
 const config = {
   builders: {
     web: {
-      devProxy: false
+      devProxy: false // disables proxying the unknown requests to the back end
     }
   }
 };
@@ -244,7 +247,7 @@ const config = {
 
 ### `dllBuildDir`
 
-Sets the output directory for the webpack DLL files (which are used to speed up the incremental builds).
+Sets the output directory for the webpack DLL files, which are used to speed up the incremental builds.
 
 Usage example:
 
@@ -252,8 +255,8 @@ Usage example:
 const config = {
   builders: {
     android: {
-      buildDir: 'build/android',
-      dllBuildDir: 'build/android/dll'
+      buildDir: 'build/android', 
+      dllBuildDir: 'build/android/dll' // webpack DLL files will be stored under `root/../build/android/dll`
     }
   }
 }
@@ -276,10 +279,12 @@ Usage example:
 ```js
 const config = {
   builders: {
+    // the React application won't be built
     react: {
       stack: ['web', 'react', 'es6', 'webpack', 'babel'],
       enabled: false
     },
+    // the Angular app will be built
     angular: {
       stack: ['web', 'angular', 'ts', 'webpack'],
       enabled: true
@@ -290,10 +295,10 @@ const config = {
 
 ### `entry`
 
-Sets the path to the main project or package file for the current builder. Typically, the file is `index.js`. You can
-also use `.jsx`, `.ts`, or `.tsx` extensions in your project.
+Sets the path to the entry file of the project or package for the current builder. Typically, the file is `index.js`. 
+You can also use `.jsx`, `.ts`, or `.tsx` extensions in your project.
 
-Defaults to `src/{platform}/index.{js,jsx,ts,tsx}`.
+**Default**: `src/{platform}/index.{js,jsx,ts,tsx}`.
 
 Usage example:
 
@@ -309,13 +314,14 @@ const config = {
 
 ### `frontendBuildDir`
 
-**Deprecated**. Use [`buildDir`](#builddir) instead.
+**Deprecated**! Use [`buildDir`](#builddir) instead.
 
 Sets the output directory for code targeted to run in the browser or on a mobile device.
 
 ### `frontendRefreshOnBackendChange`
 
-Triggers refreshing the front-end code when the back-end code changes. Use this property only for the server builders.
+Triggers refreshing the front-end code when the back-end code changes. **Use this property only for the server 
+builders**.
 
 **Type**: `Boolean` <br />
 **Default**: `false`
@@ -395,8 +401,8 @@ const config = {
 
 ### `options`
 
-Allows you to set global configurations for all builders in the current SpinJS configuration file. SpinJS will copy the
-global options into each builder.
+Allows you to set the global configurations for all builders in the current SpinJS configuration file. SpinJS will copy 
+the options in `options` into each builder.
 
 Usage example:
 
@@ -404,7 +410,7 @@ Usage example:
 const config = {
   builders: { /* Your builders */ },
   options: {
-    /* Global options for all builders */
+    /* Global options to be re-used for all builders */
   }
 }
 ```
@@ -413,10 +419,10 @@ const config = {
 
 Configures the builder roles. Use the following values: `build`, `watch`, or `test`.
 
-Default: `["build", "watch"]`.
+**Default**: `["build", "watch"]`
 
-* `build`, defaults the builder for build
-* `watch`, defines the builder for development mode
+* `build`, defines the builder for build
+* `watch`, defines the builder for development mode with live or hot reload
 * `test`, defines the builder for testing mode
 
 Usage example:
@@ -470,8 +476,8 @@ Enables source maps generation for the output code.
 
 ### `ssr`
 
-Enables server side rendering (SSR) for the application. Enabling this option will make it possible to require the
-client-side assets inside the server code.
+Enables server side rendering (SSR). Enabling this option will make it possible to require the client-side assets inside 
+the server code.
 
 **Type**: `Boolean` <br />
 **Default**: `true`
@@ -483,25 +489,25 @@ separated by a colon.
 
 The `stack` property can accept the following technologies:
 
-| Option            | Description                                                  |
-| ----------------- | ------------------------------------------------------------ |
-| babel             | Transpile ECMAScript 6 and ECMAScript 7 code to ECMAScript 5 |
-| ts                | Transpile TypeScript code to ECMAScript 5                    |
-| vue               | Vue.js                                                       |
-| i18next           | Loader to generate resources for `i18next`                   |
-| angular           | Angular                                                      |
-| react             | React                                                        |
-| react-native      | React Native with Expo                                       |
-| react-hot-loader  | Use React Hot Loader during development                      |
-| styled-components | Styled Components                                            |
-| css               | CSS                                                          |
-| sass              | SCSS code is transpiled to CSS                               |
-| less              | LESS code is transpiled to CSS                               |
-| apollo            | Apollo GraphQL                                               |
-| server            | The code is targeted to the Node.js platform                 |
-| android           | The code is targeted to the Android platform                 |
-| ios               | The code is targeted to the iOS platform                     |
-| web               | The code is targeted to run in a web browser                 |
+| Option            | Description                                  |
+| ----------------- | -------------------------------------------- |
+| babel             | Transpile ES6 and ES7 code to ECMAScript 5   |
+| ts                | Transpile TypeScript code to ECMAScript 5    |
+| vue               | Vue                                          |
+| i18next           | Loader to generate resources for `i18next`   |
+| angular           | Angular                                      |
+| react             | React                                        |
+| react-native      | React Native with Expo                       |
+| react-hot-loader  | Use React Hot Loader during development      |
+| styled-components | Styled Components                            |
+| css               | CSS                                          |
+| sass              | SCSS code is transpiled to CSS               |
+| less              | LESS code is transpiled to CSS               |
+| apollo            | Apollo GraphQL                               |
+| server            | The code is targeted to the server platform  |
+| android           | The code is targeted to the Android platform |
+| ios               | The code is targeted to the iOS platform     |
+| web               | The code is targeted to run in a web browser |
 
 Usage example:
 
@@ -509,19 +515,13 @@ Usage example:
 const config = {
   builders: {
     web: {
-      stack: ['web', 'babel', 'react', 'es6', 'css', 'sass']
-    }
-  }
-}
-```
-
-Alternately, you can pass a string with technologies separated by colons:
-
-```js
-const config = {
-  builders: {
-    web: {
-      stack: 'web:babel:react:es6:css:sass'
+      stack: ['web', 'babel', 'react', 'es6', 'css', 'sass'] // use an array of strings
+    },
+    server: {
+      stack: "server:ts:apollo:i18next" // use a string with values separated by a colon
+    },
+    ios: {
+      stack: ['ios', 'less']
     }
   }
 }
@@ -529,9 +529,8 @@ const config = {
 
 ### `waitOn`
 
-Sets the URL in the format as defined by the [wait-on] NPM package. Enabling this property will allow the web builder to
-to wait for files, ports, sockets, and HTTP or HTTPS resources to become available **before** emitting the compiled
-code.
+Sets the URL in the format as defined by the [wait-on] NPM package. Enabling this property allows the web builder to
+wait for files, ports, sockets, and HTTP or HTTPS resources to become available **before** emitting the compiled code.
 
 **Type**: `Boolean` <br />
 **Default**: `true`
@@ -542,15 +541,15 @@ Usage example:
 const config = {
   builders: {
     web: {
-      // Wait for the server to start prior to letting webpack to load the client pages
+      // wait for the server to start prior to letting webpack to load the client pages
       waitOn: ['tcp:localhost:8080']
     },
   }
 }
 ```
 
-This option is useful to force the front end wait until the back end code is fully compiled and starts first in
-development mode.
+This option is useful to force the front end wait until the back end code was fully compiled and the server application 
+has started in development mode.
 
 ### `webpackDevHost`
 
@@ -581,7 +580,7 @@ Usage example:
 const config = {
   builders: {
     web: {
-      webpackDevPort: 4000 // Your web application will run on this port
+      webpackDevPort: 4000 // your web application will run on this port
     }
   }
 }
@@ -594,12 +593,34 @@ Sets the protocol for webpack-dev-server. You can set `webpackDevProtocol` to `h
 **Type**: `String` <br />
 **Default**: `http`
 
+Usage example:
+
+```javascript
+const config = {
+  builders: {
+    web: {
+      webpackDevProtocol: 'https'
+    }
+  }
+}
+```
+
 ### `webpackDll`
 
 Enables generating the webpack DLL files to speed up incremental builds.
 
 **Type**: `Boolean` <br />
 **Default**: `true`
+
+```javascript
+const config = {
+  builders: {
+    web: {
+      webpackDLL: false // disables generating webpack DLL files
+    }
+  }
+}
+```
 
 ### `writeStats`
 
@@ -610,24 +631,21 @@ Write `stats.json` to your HDD or SSD.
 
 ### `{toolName}Config`
 
-Sets additional configuration options for various tools such as webpack, loaders, or other tools.
+Sets additional configuration options for various tools such as loaders, webpack, or other tools.
 
-Spin auto-generates configurations for the tools such as webpack and Babel, but if you want to tweak the generated
+SpinJS auto-generates configurations for the tools such as webpack and Babel, but if you want to tweak the 
 configurations, you can set additional properties in the `.spinrc.js` file.
 
-The Spin `config` object accepts such properties as `webpackConfig`, `babelConfig`, and similar (the pattern is
-`{toolName}Config`), which you can add to each builder and set the configurations for the tool as you need.
+The SpinJS `config` object accepts such properties as `webpackConfig`, `babelConfig`, and similar. Notice the pattern:
+`{toolName}Config`, where the tool name must be all lowercase letters. The `{toolName}` is the name of the library or 
+loader. For example, you can add your specific configurations for webpack by using the `webpackConfig` property on the
+builder object; by using `babelConfig` for Babel settings; `sassConfig` for Sass, etc. 
+as you need.
 
-Instead of adding these properties to a builder, you can also add them to `builders.options` to enable the configuration
-options for _all_ builders defined in `config.builders`.
+Instead of adding your specific properties to one builder, you can add them to `builders.options` to use your custom 
+configuration options for _all_ builders defined in `config.builders`.
 
-The additional specific configurations that you provided for the tools will be merged with the auto-generated configs
-with the utility called [`webpack-merge`].
-
-You can view the result of merging the configurations by running [Spin with the `-v` option].
-
-The `{toolName}` is the name of the library or loader. For example, you can add your specific configurations for
-webpack with `webpackConfig`; for Babel with `babelConfig`; for Sass with `sassConfig`; etc.
+Your additional configurations will be merged with the auto-generated configs with the utility called [`webpack-merge`].
 
 Usage example:
 

@@ -1,6 +1,6 @@
 # SpinJS Scripts
 
-SpinJS provides four commands, which you can run with options.
+SpinJS provides four commands and a few [options](#running-spinjs-commands-with-options) you can run the commands with.
 
 ## `spin watch`
 
@@ -12,16 +12,15 @@ spin watch
 
 ## `spin build`
 
-Builds your project for production. Internally, SpinJS sets the webpack's `mode` property to `'production'`, and the 
-build code gets minified.
+Builds your project for production: the build code is minified. 
 
-The project won't run! SpinJS will only generate and minify the build, and save the generated files under the `build`
-directory. The `build` directory is automatically created under the [current working directory]. To change the `build`
-directory, consult the [configuration] guide.
+Note that the project won't run, SpinJS will only generate and minify the build, and also save the generated files under 
+the `build` directory. The `build` directory is automatically created under the **current working directory**. To change 
+the directory where SpinJS will store the built production code, consult the [configuration] guide.
 
 ```bash
 spin build
-```
+``` 
 
 ## `spin start`
 
@@ -39,19 +38,34 @@ Runs all the tests using `mocha-webpack`.
 spin test
 ```
 
-## Running SpinJS Commands with the `-v` Option
+## Running SpinJS commands with options
 
-SpinJS generates a webpack configuration file, which you can view by running SpinJS commands with the `-v` option:
+You can run SpinJS commands using the following options:
 
+* `-n`, shows the list of builders
+* `-d`, disables builders
+* `-e`, enables builders
+* `-v`, shows generated configurations in the console
+
+You can specify the option after the SpinJS command:
+ 
 ```bash
-spin <command> -v
+spin <command> <option>
 ```
 
-For example, you can view the development configuration file by running this command:
+For example, you can tell SpinJS to log out them by running the commands with the `-v` option:
 
 ```bash
 spin watch -v
 ```
 
-[configuration]: https://github.com/sysgears/spinjs/blob/master/docs/configuration.md
-[current working directory]: https://github.com/sysgears/spinjs/blob/docs/docs/howSpinWorks.md#current-working-directory
+If your project has several SpinJS builders, and you want to only run specific builders without changing SpinJS 
+configurations, you can run a command this way:
+
+```bash
+spin watch -d ios -e web
+```
+
+The command above disables the iOS build and enables the web build (the client-side application).
+
+[configuration]: https://github.com/sysgears/spinjs/blob/master/docs/configuration.md#buildDir
