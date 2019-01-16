@@ -5,24 +5,22 @@
 
 ## Description
 
-SpinJS is a JavaScript tool that helps to build projects for production, run them in test mode, and launch projects in 
-watch mode for development. SpinJS relieves you from the pains of configuring the project builds for client, server, 
-and native mobile applications so you can focus on the actual development.
+SpinJS is a build tool that can create project builds for production, run them in test mode, and launch your project in 
+watch mode for development without the need for you to configure the builds. To make this possible, SpinJS analyzes 
+your project structure and dependencies and decides how to build the project. And unlike many similar build tools, 
+SpinJS doesn't tie you to a specific framework or lock you out from the generated configurations &ndash; you can
+customize the project configurations however you need.
 
-In the simplest terms, SpinJS aims to analyze your JavaScript project from various aspects: 
+To reach the goal, SpinJS reads the `package.json` file as well as the actually installed dependencies in the 
+`node_modules` directory and then automatically configures the technologies it knows about using custom [plugins]. 
+SpinJS also understands whether you're developing a standalone project, a Lerna monorepo, or a Yarn Workspaces project 
+to decide how it should be built.
 
-* What dependencies your project has; 
-* What structure it has whether it's a standalone project, a Lerna monorepo, or a Yarn Workspaces project; and
-* what tool would be the best to build the project with.
+In doing so, SpinJS relieves you from the pains of configuring the project builds for client, server, and native mobile 
+applications so you can focus on development.
 
-SpinJS tries to understands a project by reading the `package.json` file as well as by reading the actually installed 
-dependencies in the `node_modules` directory and then configures the technologies it knows about using custom [plugins].
-
-SpinJS does its best to provide you with an advanced build setup using the minimal information that you provide about
-the technology stack while still giving you the possibility to configure every aspect of how your project gets built.
-
-SpinJS is different from similar build tools in that it doesn't tie you to a specific framework. And SpinJS doesn't lock
-you out from the generated configurations.
+The bottom line is that SpinJS does its best to provide you with an advanced build setup using the minimal information 
+about the technology stack while still giving you the ability to configure every aspect of how your project gets built.
 
 ## Installation
 
