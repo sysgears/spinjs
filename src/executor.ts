@@ -1003,6 +1003,12 @@ const startExpoProdServer = async (spin: Spin, mainBuilder: Builder, builders: B
   logger.info(`Expo server running on address: ${localAddress}`);
 };
 
+/**
+ * startExp contains the logic for the legacy 'exp' module.
+ * @param spin
+ * @param builders
+ * @param logger
+ */
 const startExp = async (spin: Spin, builders: Builders, logger) => {
   let mainBuilder: Builder;
   for (const name of Object.keys(builders)) {
@@ -1032,6 +1038,47 @@ const startExp = async (spin: Spin, builders: Builders, logger) => {
       }
     );
     exp.on('exit', code => {
+      process.exit(code);
+    });
+  }
+};
+
+/**
+ * startExpo contains the logic for the 'expo-cli' module.
+ *
+ * @param spin
+ * @param builders
+ * @param logger
+ */
+const startExpo = async (spin: Spin, builders: Builders, logger) => {
+  let mainBuilder: Builder;
+  for (const name of Object.keys(builders)) {
+    const builder = builders[name];
+    if (builder.stack.hasAny(['ios', 'android'])) {
+      mainBuilder = builder;
+      break;
+    }
+  }
+  if (!mainBuilder) {
+    throw new Error('Builders for `ios` or `android` not found');
+  }
+
+  const projectRoot = path.join(process.cwd(), '.expo', 'all');
+  setupExpoDir(spin, mainBuilder, projectRoot, 'all');
+  const expIdx = process.argv.indexOf('expo');
+  if (['ba', 'bi', 'build:android', 'build:ios', 'publish', 'p', 'server'].indexOf(process.argv[expIdx + 1]) >= 0) {
+    await startExpoProdServer(spin, mainBuilder, builders, logger);
+  }
+  if (process.argv[expIdx + 1] !== 'server') {
+    const expo = spawn(
+      path.join(process.cwd(), 'node_modules/.bin/expo' + (__WINDOWS__ ? '.cmd' : '')),
+      process.argv.splice(expIdx + 1),
+      {
+        cwd: projectRoot,
+        stdio: [0, 1, 2]
+      }
+    );
+    expo.on('exit', code => {
       process.exit(code);
     });
   }
@@ -1069,6 +1116,8 @@ const execute = (cmd: string, argv: any, builders: Builders, spin: Spin) => {
 
     if (cmd === 'exp') {
       startExp(spin, builders, spinLogger);
+    } else if (cmd === 'expo') {
+      startExpo(spin, builders, spinLogger);
     } else if (cmd === 'test') {
       // TODO: Remove this in 0.5.x
       let builder;
