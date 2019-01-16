@@ -4,7 +4,6 @@ import * as path from 'path';
 import * as url from 'url';
 
 import { Builder } from '../Builder';
-import BuilderDiscoverer from '../BuilderDiscoverer';
 import { ConfigPlugin } from '../ConfigPlugin';
 import Spin from '../Spin';
 
@@ -47,8 +46,10 @@ const createPlugins = (builder: Builder, spin: Spin) => {
       }
       if (stack.hasAny('angular')) {
         // https://github.com/angular/angular/issues/10618
-        uglifyOpts.mangle = {
-          keep_fname7e8a6ea17be4d30d84376e45f0c76e63b3d23893s7e8a6ea17be4d30d84376e45f0c76e63b3d23893: true
+        uglifyOpts.uglifyOptions = {
+          mangle: {
+            keep_fnames: true
+          }
         };
       }
       const UglifyJsPlugin = builder.require('uglifyjs-webpack-plugin');
@@ -257,7 +258,12 @@ const createConfig = (builder: Builder, spin: Spin) => {
       ...config,
       target: 'node',
       externals: (context, request, callback) => {
-        if (request.indexOf('webpack') < 0 && request.indexOf('babel-polyfill') < 0 && !request.startsWith('.')) {
+        if (
+          request.indexOf('webpack') < 0 &&
+          request.indexOf('babel-polyfill') < 0 &&
+          request.indexOf('@babel/polyfill') < 0 &&
+          !request.startsWith('.')
+        ) {
           const fullPath = builder.require.probe(request, context);
           if (fullPath) {
             const ext = path.extname(fullPath);

@@ -91,7 +91,14 @@ const runServer = (cwd, serverPath, nodeDebugger, logger) => {
           const nodeMinor = parseInt(nodeVersion[2], 10);
           nodeDebugOpt = nodeMajor >= 6 || (nodeMajor === 6 && nodeMinor >= 9) ? '--inspect' : '--debug';
           detectPort(9229).then(debugPort => {
-            spawnServer(cwd, [nodeDebugOpt + '=' + debugPort, serverPath], { serverPath, nodeDebugger }, logger);
+            // Bind the port to public ip in order to allow users to access the port for debugging when using docker.
+            const debugHost = isDocker() ? '0.0.0.0:' : '';
+            spawnServer(
+              cwd,
+              [nodeDebugOpt + '=' + debugHost + debugPort, serverPath],
+              { serverPath, nodeDebugger },
+              logger
+            );
           });
         });
       }
@@ -159,7 +166,9 @@ const startClientWebpack = (hasBackend, spin, builder) => {
   const configOutputPath = config.output.path;
 
   const VirtualModules = builder.require('webpack-virtual-modules');
-  const clientVirtualModules = new VirtualModules({ 'node_modules/backend_reload.js': '' });
+  const clientVirtualModules = new VirtualModules({
+    [path.join(builder.projectRoot, 'node_modules', 'backend_reload.js')]: ''
+  });
   config.plugins.push(clientVirtualModules);
   frontendVirtualModules.push(clientVirtualModules);
 
@@ -187,10 +196,13 @@ const startClientWebpack = (hasBackend, spin, builder) => {
 };
 
 let backendReloadCount = 0;
-const increaseBackendReloadCount = () => {
+const increaseBackendReloadCount = builder => {
   backendReloadCount++;
   for (const virtualModules of frontendVirtualModules) {
-    virtualModules.writeModule('node_modules/backend_reload.js', `var count = ${backendReloadCount};\n`);
+    virtualModules.writeModule(
+      path.join(builder.projectRoot, 'node_modules', 'backend_reload.js'),
+      `var count = ${backendReloadCount};\n`
+    );
   }
 };
 
@@ -241,7 +253,7 @@ const startServerWebpack = (spin, builder) => {
 
             if (builder.frontendRefreshOnBackendChange) {
               for (const module of stats.compilation.modules) {
-                if (module.built && module.resource && module.resource.split(/[\\\/]/).indexOf('server') >= 0) {
+                if (module.built && module.resource && module.resource.indexOf('server') >= 0) {
                   // Force front-end refresh on back-end change
                   logger.debug('Force front-end current page refresh, due to change in backend at:', module.resource);
                   process.send({ cmd: BACKEND_CHANGE_MSG });
@@ -812,28 +824,38 @@ const setupExpoDir = (spin: Spin, builder: Builder, dir, platform) => {
 const deviceLoggers = {};
 
 const mirrorExpoLogs = (builder: Builder, projectRoot: string) => {
-  const { ProjectUtils } = builder.require('xdl');
+  const bunyan = builder.require('@expo/bunyan');
 
-  deviceLoggers[projectRoot] = minilog('expo-for-' + builder.name);
+  if (!bunyan._patched) {
+    deviceLoggers[projectRoot] = minilog('expo-for-' + builder.name);
 
-  if (!ProjectUtils.logWithLevel._patched) {
-    const origExpoLogger = ProjectUtils.logWithLevel;
-    ProjectUtils.logWithLevel = (projRoot, level, object, msg, id) => {
-      let json;
-      if (msg[0] === '{') {
-        json = JSON.parse(msg);
-      }
-      if (level === 'error') {
-        const info = object.includesStack ? json.message + '\n' + json.stack : json.message;
-        deviceLoggers[projRoot].log(info.replace(/\\n/g, '\n'));
-      } else if (json) {
-        deviceLoggers[projRoot].log(msg.message);
-      } else {
-        deviceLoggers[projRoot].log(msg);
-      }
-      return origExpoLogger.call(ProjectUtils, projRoot, level, object, msg, id);
+    const origCreate = bunyan.createLogger;
+    bunyan.createLogger = opts => {
+      const logger = origCreate.call(bunyan, opts);
+      const origChild = logger.child;
+      logger.child = (...args) => {
+        const child = origChild.apply(logger, args);
+        const patched = { ...child };
+        for (const name of ['info', 'debug', 'warn', 'error']) {
+          patched[name] = (...logArgs) => {
+            const [obj, msg] = logArgs;
+            if (!obj.issueCleared) {
+              let message;
+              try {
+                const json = JSON.parse(msg);
+                message = json.stack ? json.message + '\n' + json.stack : json.message;
+              } catch (e) {}
+              message = message || msg || obj;
+              deviceLoggers[projectRoot][name].apply(deviceLoggers[projectRoot], [message]);
+              child[name].call(child, logArgs);
+            }
+          };
+        }
+        return patched;
+      };
+      return logger;
     };
-    ProjectUtils.logWithLevel._patched = true;
+    bunyan._patched = true;
   }
 };
 
@@ -1090,14 +1112,10 @@ const execute = (cmd: string, argv: any, builders: Builders, spin: Spin) => {
       prepareExpoPromise.then(() => {
         const workerBuilders = {};
 
-        let potentialWorkerCount = 0;
         for (const id of Object.keys(builders)) {
           const builder = builders[id];
           if (builder.stack.hasAny(['dll', 'test'])) {
             continue;
-          }
-          if (builder.cluster !== false) {
-            potentialWorkerCount++;
           }
         }
 
@@ -1107,8 +1125,12 @@ const execute = (cmd: string, argv: any, builders: Builders, spin: Spin) => {
             continue;
           }
 
-          if (potentialWorkerCount > 1 && !builder.cluster) {
-            const worker = cluster.fork({ BUILDER_ID: id, EXPO_PORTS: JSON.stringify(expoPorts) });
+          if (!builder.cluster) {
+            const worker = cluster.fork({
+              BUILDER_ID: id,
+              BUILDER_CONFIG_PATH: builder.configPath,
+              EXPO_PORTS: JSON.stringify(expoPorts)
+            });
             workerBuilders[worker.process.pid] = builder;
           } else {
             runBuilder(cmd, builder, platforms);
@@ -1140,7 +1162,7 @@ const execute = (cmd: string, argv: any, builders: Builders, spin: Spin) => {
     process.on('message', msg => {
       if (msg.cmd === BACKEND_CHANGE_MSG) {
         debug(`Increase backend reload count in ${builder.id}`);
-        increaseBackendReloadCount();
+        increaseBackendReloadCount(builder);
       }
     });
 

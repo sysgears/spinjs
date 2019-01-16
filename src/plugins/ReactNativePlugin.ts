@@ -4,6 +4,7 @@ import * as path from 'path';
 import { Builder } from '../Builder';
 import { ConfigPlugin } from '../ConfigPlugin';
 import Spin from '../Spin';
+import { excludeProjectModules } from './shared/JSRuleFinder';
 import JSRuleFinder from './shared/JSRuleFinder';
 import UPFinder from './shared/UPFinder';
 
@@ -11,11 +12,12 @@ let babelRegisterDone = false;
 
 const registerBabel = (builder: Builder): void => {
   if (!babelRegisterDone) {
-    const isBabel7 = !!builder.require.probe('@babel/core') && !!builder.require.probe('@babel/preset-flow');
+    const isBabel7 = builder.require.probe('@babel/core') && builder.require.probe('@babel/preset-flow');
     const babelRegister = isBabel7 ? '@babel/register' : 'babel-register';
-    const reactNativePreset = !!builder.require.probe('metro-react-native-babel-preset')
-      ? 'metro-react-native-babel-preset'
-      : 'babel-preset-react-native';
+    const reactNativePreset =
+      isBabel7 && builder.require.probe('metro-react-native-babel-preset')
+        ? 'metro-react-native-babel-preset'
+        : 'babel-preset-react-native';
     // tslint:disable-next-line
     builder.require(babelRegister)({
       presets: [
@@ -47,7 +49,7 @@ export default class ReactNativePlugin implements ConfigPlugin {
       const AssetResolver = builder.require('haul/src/resolvers/AssetResolver');
       const HasteResolver = builder.require('haul/src/resolvers/HasteResolver');
 
-      const babelrc = new UPFinder(builder).find(['.babelrc.native']);
+      const babelrc = new UPFinder(builder).find(['.babelrc.native', 'babel.config.js']);
 
       const jsRuleFinder = new JSRuleFinder(builder);
       const jsRule = jsRuleFinder.findAndCreateJSRule();
@@ -58,13 +60,14 @@ export default class ReactNativePlugin implements ConfigPlugin {
               builder.cache === true || (builder.cache === 'auto' && spin.dev) ? '.cache' : builder.cache,
               'babel-loader'
             );
-      const defaultConfig = !!babelrc
-        ? JSON.parse(fs.readFileSync(babelrc).toString())
-        : {
-            compact: !spin.dev,
-            presets: (['expo'] as any[]).concat(spin.dev ? [] : [['minify', { mangle: false }]]),
-            plugins: ['haul/src/utils/fixRequireIssues']
-          };
+      const defaultConfig =
+        babelrc && babelrc.endsWith('.babelrc.native')
+          ? JSON.parse(fs.readFileSync(babelrc).toString())
+          : {
+              compact: !spin.dev,
+              presets: (['expo'] as any[]).concat(spin.dev ? [] : [['minify', { mangle: false }]]),
+              plugins: ['haul/src/utils/fixRequireIssues']
+            };
       builder.config.module.rules.push({
         test: new RegExp(
           '^.*[\\\\\\/]node_modules[\\\\\\/].*\\.' +
@@ -73,14 +76,23 @@ export default class ReactNativePlugin implements ConfigPlugin {
               .pop()
               .slice(0, -1)
         ),
-        exclude: /node_modules\/(?!react-native.*|@expo|expo|lottie-react-native|haul|pretty-format|react-navigation|antd-mobile-rn)$/,
+        exclude: excludeProjectModules(
+          builder.projectRoot,
+          /(react-native.*|@expo|expo|lottie-react-native|haul|pretty-format|react-navigation|antd-mobile-rn)/
+        ),
         use: {
           loader: builder.require.probe('heroku-babel-loader') ? 'heroku-babel-loader' : 'babel-loader',
-          options: spin.createConfig(builder, 'babel', {
-            babelrc: false,
-            cacheDirectory,
-            ...defaultConfig
-          })
+          options: spin.createConfig(
+            builder,
+            'babel',
+            babelrc && babelrc.endsWith('.babelrc.native')
+              ? {
+                  babelrc: false,
+                  cacheDirectory,
+                  ...defaultConfig
+                }
+              : { babelrc: true, cacheDirectory }
+          )
         }
       });
 
@@ -115,7 +127,7 @@ export default class ReactNativePlugin implements ConfigPlugin {
         resolve: {
           plugins: [
             new HasteResolver({
-              directories: [path.dirname(builder.require.resolve('react-native/package.json'))]
+              directories: [path.join(path.dirname(builder.require.resolve('react-native/package.json')), 'Libraries')]
             }),
             new AssetResolver({
               platform: stack.platform,

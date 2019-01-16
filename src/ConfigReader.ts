@@ -2,9 +2,9 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as merge from 'webpack-merge';
 
-import { Builder, Builders } from './Builder';
+import { Builders } from './Builder';
 import { ConfigPlugin } from './ConfigPlugin';
-import createRequire, { RequireFunction } from './createRequire';
+import createRequire from './createRequire';
 import EnhancedError from './EnhancedError';
 import inferConfig from './inferConfig';
 import Spin from './Spin';
@@ -74,6 +74,7 @@ export default class ConfigReader {
       }
       const builderId = `${relativePath}[${builder.name}]`;
       builder.id = builderId;
+      builder.configPath = filePath;
       builders[builderId] = builder;
       // TODO: remove backendBuildDir, frontendBuildDir in 0.5.x
       builder.buildDir = builder.backendBuildDir || builder.frontendBuildDir ? undefined : builder.buildDir || 'build';

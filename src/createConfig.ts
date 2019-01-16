@@ -1,10 +1,13 @@
 import * as cluster from 'cluster';
 import * as fs from 'fs';
 import * as minilog from 'minilog';
+import * as path from 'path';
+import upDirs from './upDirs';
 
 import { Builder } from './Builder';
 import BuilderDiscoverer from './BuilderDiscoverer';
 import { ConfigPlugin } from './ConfigPlugin';
+import ConfigReader from './ConfigReader';
 import AngularPlugin from './plugins/AngularPlugin';
 import ApolloPlugin from './plugins/ApolloPlugin';
 import BabelPlugin from './plugins/BabelPlugin';
@@ -28,6 +31,32 @@ const WEBPACK_OVERRIDES_NAME = 'webpack.overrides.js';
 
 const spinLogger = minilog('spin');
 
+const getProjectRoot = (builder: Builder): string => {
+  const pkgPathList = upDirs(builder.require.cwd, 'package.json');
+  let projectRoot;
+  for (const pkg of pkgPathList) {
+    if (fs.existsSync(pkg)) {
+      try {
+        JSON.parse(fs.readFileSync(pkg, 'utf8'));
+        projectRoot = path.dirname(pkg);
+      } catch (e) {}
+    }
+  }
+  return projectRoot;
+};
+
+// const getAppModuleRegexp = (projectRoot: string): string => {
+//   const regexp = '';
+//   const files = fs.readdirSync(projectRoot);
+//   files.forEach(file => {
+//     if (file === 'node_modules') {
+//       // searchInside();
+//     }
+//     console.log(file, fs.statSync(file).isDirectory());
+//   });
+//   return regexp;
+// };
+
 const createConfig = (cwd: string, cmd: string, argv: any, builderName?: string) => {
   const builders = {};
 
@@ -50,7 +79,6 @@ const createConfig = (cwd: string, cmd: string, argv: any, builderName?: string)
     new I18NextPlugin()
   ];
   const spin = new Spin(cwd, cmd);
-  const builderDiscoverer = new BuilderDiscoverer(spin, plugins, argv);
   let role = cmd;
   if (cmd === 'exp') {
     role = 'build';
@@ -58,7 +86,14 @@ const createConfig = (cwd: string, cmd: string, argv: any, builderName?: string)
     role = 'watch';
   }
 
-  const discoveredBuilders = builderDiscoverer.discover();
+  let discoveredBuilders;
+  if (cluster.isMaster) {
+    const builderDiscoverer = new BuilderDiscoverer(spin, plugins, argv);
+
+    discoveredBuilders = builderDiscoverer.discover();
+  } else {
+    discoveredBuilders = new ConfigReader(spin, plugins).readConfig(process.env.BUILDER_CONFIG_PATH);
+  }
   if (!discoveredBuilders) {
     throw new Error('Cannot find spinjs config');
   }
@@ -69,9 +104,19 @@ const createConfig = (cwd: string, cmd: string, argv: any, builderName?: string)
   for (const builderId of Object.keys(discoveredBuilders)) {
     const builder = discoveredBuilders[builderId];
     const stack = builder.stack;
-
-    if (builder.name !== builderName && (builder.enabled === false || builder.roles.indexOf(role) < 0)) {
+    if (builder.roles.indexOf(role) < 0 || (process.env.BUILDER_ID && builderId !== process.env.BUILDER_ID)) {
       continue;
+    }
+
+    builder.enabled =
+      (builder.enabled !== false && !argv.d) ||
+      (builder.enabled !== false && argv.d && ![].concat(argv.d).some(regex => new RegExp(regex).test(builder.name))) ||
+      (builder.enabled === false && argv.e && [].concat(argv.e).some(regex => new RegExp(regex).test(builder.name))) ||
+      builder.name === builderName;
+
+    if (builder.enabled && !cluster.isMaster) {
+      builder.projectRoot = getProjectRoot(builder);
+      // builder.appModuleRegexp = getAppModuleRegexp(builder.projectRoot);
     }
 
     if (spin.dev && builder.webpackDll && !stack.hasAny('server') && !builderName) {
@@ -88,6 +133,10 @@ const createConfig = (cwd: string, cmd: string, argv: any, builderName?: string)
 
   for (const builderId of Object.keys(builders)) {
     const builder = builders[builderId];
+    if (!builder.enabled) {
+      continue;
+    }
+
     const overridesConfig = builder.overridesConfig || WEBPACK_OVERRIDES_NAME;
     const overrides = fs.existsSync(overridesConfig) ? builder.require('./' + overridesConfig) : {};
 
