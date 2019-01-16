@@ -5,18 +5,23 @@
 
 ## Description
 
-SpinJS is a JavaScript library that creates project bundles for development, production, and testing. SpinJS relieves 
-you from the pains of configuring your project with [webpack] for web, server, and native mobile applications so you can 
-focus on the actual development.
+SpinJS is a JavaScript tool that helps to build projects for production, run them in test mode, and launch projects in 
+watch mode for development. SpinJS relieves you from the pains of configuring the project builds for client, server, 
+and native mobile applications so you can focus on the actual development.
 
-In the simplest terms, SpinJS understands what dependencies you installed for your JavaScript project by reading the 
-`package.json` file and then configures the technologies it knows about using custom [plugins].
+In the simplest terms, SpinJS aims to analyze your JavaScript project from various aspects: 
+
+* What dependencies your project has; 
+* What structure it has whether it's a standalone project, a Lerna monorepo, or a Yarn Workspaces project; and
+* what tool would be the best to build the project with.
+
+SpinJS tries to understands a project by reading the `package.json` file as well as by reading the actually installed 
+dependencies in the `node_modules` directory and then configures the technologies it knows about using custom [plugins].
 
 SpinJS does its best to provide you with an advanced build setup using the minimal information that you provide about
-your technology stack while still giving you the possibility to further configure every aspect of how the project gets
-built.
+the technology stack while still giving you the possibility to configure every aspect of how your project gets built.
 
-SpinJS is different from similar build tools in that it doesn't tie you to a specific framework. And SpinJS doesn't lock 
+SpinJS is different from similar build tools in that it doesn't tie you to a specific framework. And SpinJS doesn't lock
 you out from the generated configurations.
 
 ## Installation
@@ -35,39 +40,28 @@ npm install spinjs --save-dev
 
 ## Getting Started
 
-To start using SpinJS, you only need to create a basic project and then install the necessary dependencies. Finally, add
-a few [SpinJS scripts] to your `package.json` like this:
-
-```json
-{
-  "scripts": {
-    "build": "spin build",
-    "start": "spin start",
-    "watch": "spin watch",
-    "test": "spin test"
-  }
-}
-```
-
-And now just run your project:
+To start using SpinJS, you only need to create a basic project and then install the necessary dependencies (including
+SpinJS). You can then build and run your project with SpinJS using the command below:
 
 ```bash
-yarn watch
-# or you can use NPM
-npm run watch
+# Without scripts
+yarn spin watch
 ```
 
-SpinJS will [build your project for development] and launch it in the webpack `watch` mode. You can start changing your
-project code, and the bundle will be automatically reloaded using the Hot Module Replacement plugin.
+SpinJS will [build your project for development] and launch it in watch mode: upon changes in code, SpinJS will rebuild
+the project and reload the build using hot code reload or live code reload.
+
+**NOTE**: If you're using NPM rather than Yarn, you need to add a few scripts to `package.json` to be able to run your 
+project with SpinJS.
 
 ## SpinJS Documentation
 
-You can follow to the [documentation] to learn more about SpinJS:
+You can follow to the documentation to learn more about SpinJS:
 
 * [Concepts]
 * [Configuration]
-* [How SpinJS works]
-* [Scripts]
+* [How SpinJS Works]
+* [SpinJS Scripts]
 
 ## Community Support
 
@@ -99,16 +93,15 @@ Copyright © 2018 [SysGears INC]. This source code is licensed under the [MIT] l
 [plugins]: https://github.com/sysgears/spinjs/blob/master/docs/concepts.md#plugins
 [spinjs scripts]: https://github.com/sysgears/spinjs/blob/master/docs/scripts.md
 [build your project for development]: https://github.com/sysgears/spinjs/blob/master/docs/scripts.md#spin-watch
-[documentation]: https://github.com/sysgears/spinjs/blob/master/docs/
-[concepts]: https://github.com/sysgears/spinjs/blob/master/docs/concepts.md
-[configuration]: https://github.com/sysgears/spinjs/blob/docs/master/docs/configuration.md
-[how spinjs works]: https://github.com/sysgears/spinjs/blob/master/docs/docs/howSpinWorks.md
-[scripts]: https://github.com/sysgears/spinjs/blob/master/docs/docs/scripts.md
-[gitter channel]: https://gitter.im/sysgears/spinjs
-[github issues]: https://github.com/sysgears/spinjs/issues
-[sysgears]: https://sysgears.com
+[Concepts]: https://github.com/sysgears/spinjs/blob/master/docs/concepts.md
+[Configuration]: https://github.com/sysgears/spinjs/blob/master/docs/configuration.md
+[How SpinJS Works]: https://github.com/sysgears/spinjs/blob/master/docs/howSpinWorks.md
+[SpinJS Scripts]: https://github.com/sysgears/spinjs/blob/master/docs/scripts.md
+[Gitter channel]: https://gitter.im/sysgears/spinjs
+[GitHub issues]: https://github.com/sysgears/spinjs/issues
+[SysGears]: https://sysgears.com
 [skype]: http://hatscripts.com/addskype?sysgears
 [emoji key]: https://github.com/kentcdodds/all-contributors#emoji-key
 [all-contributors]: https://github.com/kentcdodds/all-contributors
-[sysgears inc]: http://sysgears.com
-[mit]: LICENSE
+[SysGears INC]: http://sysgears.com
+[MIT]: LICENSE
