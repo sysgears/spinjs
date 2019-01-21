@@ -800,7 +800,7 @@ const setupExpoDir = (spin: Spin, builder: Builder, dir, platform) => {
   }
   pkg.main = `index.mobile`;
   fs.writeFileSync(path.join(dir, 'package.json'), JSON.stringify(pkg, null, 2));
-  const appJson = JSON.parse(fs.readFileSync(builder.require.resolve('./app.json')).toString());
+  const appJson = JSON.parse(fs.readFileSync(builder.require.resolve('./app.json'), 'utf8'));
   [
     'expo.icon',
     'expo.ios.icon',
@@ -816,9 +816,14 @@ const setupExpoDir = (spin: Spin, builder: Builder, dir, platform) => {
     'expo.android.splash.xxxhdpi'
   ].forEach(keyPath => copyExpoImage(builder.require.cwd, dir, appJson, keyPath));
   fs.writeFileSync(path.join(dir, 'app.json'), JSON.stringify(appJson, null, 2));
+  let expRcJson: any = {};
+  try {
+    expRcJson = JSON.parse(fs.readFileSync(builder.require.resolve('./.exprc'), 'utf8'));
+  } catch (e) {}
   if (platform !== 'all') {
-    fs.writeFileSync(path.join(dir, '.exprc'), JSON.stringify({ manifestPort: expoPorts[platform] }, null, 2));
+    expRcJson.manifestPort = expoPorts[platform];
   }
+  fs.writeFileSync(path.join(dir, '.exprc'), JSON.stringify(expRcJson, null, 2));
 };
 
 const deviceLoggers = {};
