@@ -103,7 +103,7 @@ export default class ReactNativePlugin implements ConfigPlugin {
 
       const reactVer = builder.require('react-native/package.json').version.split('.')[1] >= 43 ? 16 : 15;
       const polyfillCode = fs
-        .readFileSync(require.resolve(`../../react-native-polyfills/react-native-polyfill-${reactVer}`))
+        .readFileSync(require.resolve(`./react-native/polyfills/react-native-polyfill-${reactVer}`))
         .toString();
       const VirtualModules = builder.require('webpack-virtual-modules');
       builder.config = spin.merge(builder.config, {

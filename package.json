@@ -22,7 +22,6 @@
   },
   "homepage": "https://github.com/sysgears/jsapp/packages/spinjs#readme",
   "files": [
-    "react-native-polyfills",
     "src",
     "lib",
     "html-plugin-template.ejs",
