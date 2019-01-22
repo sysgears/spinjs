@@ -2,33 +2,44 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { Builder } from '../../Builder';
 
-const projectPackages = {};
-const projectModules = {};
+const transpiledPackages = {};
+const transpiledModules = {};
+const KNOWN_RN_PACKAGES = [/expo.*/, /@expo.*/, /react-navigation.*/, /react-native.*/];
 
-export const excludeNonProjectModules = (projectRoot: string, includeNodeModulesRegexp?: RegExp) => modulePath => {
-  const idx = modulePath.indexOf(path.sep + 'node_modules' + path.sep);
+export const excludeNonProjectModules = (builder: Builder) => modulePath => {
+  const idx = modulePath.lastIndexOf(path.sep + 'node_modules' + path.sep);
   if (idx >= 0) {
-    if (includeNodeModulesRegexp && includeNodeModulesRegexp.test(modulePath)) {
-      return false;
-    }
-    if (projectModules[modulePath] === undefined) {
+    if (transpiledModules[modulePath] === undefined) {
       const pkgPathStart = modulePath[idx + 14] !== '@' ? idx + 14 : modulePath.indexOf(path.sep, idx + 14) + 1;
       let pkgPathEnd = modulePath.indexOf(path.sep, pkgPathStart);
       if (pkgPathEnd < 0) {
         pkgPathEnd = modulePath.length;
       }
       const pkgPath = modulePath.substr(0, pkgPathEnd);
-      if (projectPackages[pkgPath] === undefined) {
-        try {
-          projectPackages[pkgPath] =
-            fs.lstatSync(pkgPath).isSymbolicLink() && fs.realpathSync(pkgPath).indexOf(projectRoot) === 0;
-        } catch (e) {
-          projectPackages[pkgPath] = false;
+      if (transpiledPackages[pkgPath] === undefined) {
+        const pkgName = pkgPath.substr(idx + 14);
+        let shouldTranspile = KNOWN_RN_PACKAGES.some(regex => regex.test(pkgName));
+        if (!shouldTranspile) {
+          try {
+            shouldTranspile =
+              fs.lstatSync(pkgPath).isSymbolicLink() && fs.realpathSync(pkgPath).indexOf(builder.projectRoot) === 0;
+          } catch (e) {}
         }
+        if (!shouldTranspile) {
+          let entryFileText;
+          try {
+            entryFileText = fs.readFileSync(builder.require.resolve(pkgName), 'utf8');
+          } catch (e) {}
+          shouldTranspile =
+            !entryFileText || entryFileText.indexOf('__esModule') >= 0
+              ? false
+              : /^(export|import)[\s]/m.test(entryFileText);
+        }
+        transpiledPackages[pkgPath] = shouldTranspile;
       }
-      projectModules[modulePath] = projectPackages[pkgPath];
+      transpiledModules[modulePath] = transpiledPackages[pkgPath];
     }
-    return !projectModules[modulePath];
+    return !transpiledModules[modulePath];
   } else {
     return false;
   }
@@ -65,7 +76,7 @@ export default class JSRuleFinder {
     if (this.jsRule) {
       throw new Error('js rule already exists!');
     }
-    this.jsRule = { test: /\.js$/, exclude: excludeNonProjectModules(this.builder.projectRoot) };
+    this.jsRule = { test: /\.js$/, exclude: excludeNonProjectModules(this.builder) };
     this.builder.config.module.rules = this.builder.config.module.rules.concat(this.jsRule);
     return this.jsRule;
   }
@@ -95,7 +106,7 @@ export default class JSRuleFinder {
     if (this.tsRule) {
       throw new Error('ts rule already exists!');
     }
-    this.tsRule = { test: /\.ts$/, exclude: excludeNonProjectModules(this.builder.projectRoot) };
+    this.tsRule = { test: /\.ts$/, exclude: excludeNonProjectModules(this.builder) };
     this.builder.config.module.rules = this.builder.config.module.rules.concat(this.tsRule);
     return this.tsRule;
   }
