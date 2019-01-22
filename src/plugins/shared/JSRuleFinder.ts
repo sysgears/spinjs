@@ -5,20 +5,20 @@ import { Builder } from '../../Builder';
 const projectPackages = {};
 const projectModules = {};
 
-export const excludeProjectModules = (projectRoot: string, includeNodeModulesRegexp?: RegExp) => modulePath => {
+export const excludeNonProjectModules = (projectRoot: string, includeNodeModulesRegexp?: RegExp) => modulePath => {
   const idx = modulePath.indexOf(path.sep + 'node_modules' + path.sep);
   if (idx >= 0) {
     if (includeNodeModulesRegexp && includeNodeModulesRegexp.test(modulePath)) {
       return false;
     }
-    if (!projectModules[modulePath]) {
+    if (projectModules[modulePath] === undefined) {
       const pkgPathStart = modulePath[idx + 14] !== '@' ? idx + 14 : modulePath.indexOf(path.sep, idx + 14) + 1;
       let pkgPathEnd = modulePath.indexOf(path.sep, pkgPathStart);
       if (pkgPathEnd < 0) {
         pkgPathEnd = modulePath.length;
       }
       const pkgPath = modulePath.substr(0, pkgPathEnd);
-      if (!projectPackages[pkgPath]) {
+      if (projectPackages[pkgPath] === undefined) {
         try {
           projectPackages[pkgPath] =
             fs.lstatSync(pkgPath).isSymbolicLink() && fs.realpathSync(pkgPath).indexOf(projectRoot) === 0;
@@ -65,7 +65,7 @@ export default class JSRuleFinder {
     if (this.jsRule) {
       throw new Error('js rule already exists!');
     }
-    this.jsRule = { test: /\.js$/, exclude: excludeProjectModules(this.builder.projectRoot) };
+    this.jsRule = { test: /\.js$/, exclude: excludeNonProjectModules(this.builder.projectRoot) };
     this.builder.config.module.rules = this.builder.config.module.rules.concat(this.jsRule);
     return this.jsRule;
   }
@@ -95,7 +95,7 @@ export default class JSRuleFinder {
     if (this.tsRule) {
       throw new Error('ts rule already exists!');
     }
-    this.tsRule = { test: /\.ts$/, exclude: excludeProjectModules(this.builder.projectRoot) };
+    this.tsRule = { test: /\.ts$/, exclude: excludeNonProjectModules(this.builder.projectRoot) };
     this.builder.config.module.rules = this.builder.config.module.rules.concat(this.tsRule);
     return this.tsRule;
   }

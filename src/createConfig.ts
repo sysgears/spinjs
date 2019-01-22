@@ -114,7 +114,7 @@ const createConfig = (cwd: string, cmd: string, argv: any, builderName?: string)
       (builder.enabled === false && argv.e && [].concat(argv.e).some(regex => new RegExp(regex).test(builder.name))) ||
       builder.name === builderName;
 
-    if (builder.enabled && !cluster.isMaster) {
+    if (builder.enabled && (!cluster.isMaster || ['exp', 'test'].indexOf(cmd) >= 0)) {
       builder.projectRoot = getProjectRoot(builder);
       // builder.appModuleRegexp = getAppModuleRegexp(builder.projectRoot);
     }

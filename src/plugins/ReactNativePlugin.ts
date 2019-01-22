@@ -4,7 +4,7 @@ import * as path from 'path';
 import { Builder } from '../Builder';
 import { ConfigPlugin } from '../ConfigPlugin';
 import Spin from '../Spin';
-import { excludeProjectModules } from './shared/JSRuleFinder';
+import { excludeNonProjectModules } from './shared/JSRuleFinder';
 import JSRuleFinder from './shared/JSRuleFinder';
 import UPFinder from './shared/UPFinder';
 
@@ -76,7 +76,7 @@ export default class ReactNativePlugin implements ConfigPlugin {
               .pop()
               .slice(0, -1)
         ),
-        exclude: excludeProjectModules(
+        exclude: excludeNonProjectModules(
           builder.projectRoot,
           /(react-native.*|@expo|expo|lottie-react-native|haul|pretty-format|react-navigation|antd-mobile-rn)/
         ),
