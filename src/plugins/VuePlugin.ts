@@ -8,6 +8,7 @@ export default class VuePlugin implements ConfigPlugin {
 
     if (stack.hasAll(['vue', 'webpack'])) {
       const webpack = builder.require('webpack');
+      const VueLoaderPlugin = builder.require('vue-loader/lib/plugin');
 
       builder.config = spin.merge(builder.config, {
         module: {
@@ -22,7 +23,8 @@ export default class VuePlugin implements ConfigPlugin {
           alias: {
             vue$: 'vue/dist/vue.esm.js'
           }
-        }
+        },
+        plugins: [new VueLoaderPlugin()]
       });
     }
   }
