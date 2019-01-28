@@ -45,18 +45,6 @@ const getProjectRoot = (builder: Builder): string => {
   return projectRoot;
 };
 
-// const getAppModuleRegexp = (projectRoot: string): string => {
-//   const regexp = '';
-//   const files = fs.readdirSync(projectRoot);
-//   files.forEach(file => {
-//     if (file === 'node_modules') {
-//       // searchInside();
-//     }
-//     console.log(file, fs.statSync(file).isDirectory());
-//   });
-//   return regexp;
-// };
-
 const createConfig = (cwd: string, cmd: string, argv: any, builderName?: string) => {
   const builders = {};
 
@@ -116,7 +104,6 @@ const createConfig = (cwd: string, cmd: string, argv: any, builderName?: string)
 
     if (builder.enabled && (!cluster.isMaster || ['exp', 'test'].indexOf(cmd) >= 0)) {
       builder.projectRoot = getProjectRoot(builder);
-      // builder.appModuleRegexp = getAppModuleRegexp(builder.projectRoot);
     }
 
     if (spin.dev && builder.webpackDll && !stack.hasAny('server') && !builderName) {
