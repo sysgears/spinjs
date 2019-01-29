@@ -98,8 +98,8 @@ const createConfig = (cwd: string, cmd: string, argv: any, builderName?: string)
 
     builder.enabled =
       (builder.enabled !== false && !argv.d) ||
-      (builder.enabled !== false && argv.d && ![].concat(argv.d).some(regex => new RegExp(regex).test(builder.name))) ||
-      (builder.enabled === false && argv.e && [].concat(argv.e).some(regex => new RegExp(regex).test(builder.name))) ||
+      (builder.enabled !== false && argv.d && ![].concat(argv.d).some(regex => new RegExp(regex).test(builderId))) ||
+      (builder.enabled === false && argv.e && [].concat(argv.e).some(regex => new RegExp(regex).test(builderId))) ||
       builder.name === builderName;
 
     if (builder.enabled && (!cluster.isMaster || ['exp', 'test'].indexOf(cmd) >= 0)) {

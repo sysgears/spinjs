@@ -1,7 +1,9 @@
+import * as fs from 'fs';
 import * as humps from 'humps';
 import * as ip from 'ip';
 import * as path from 'path';
 import * as url from 'url';
+import upDirs from '../upDirs';
 
 import { Builder } from '../Builder';
 import { ConfigPlugin } from '../ConfigPlugin';
@@ -148,7 +150,20 @@ const createPlugins = (builder: Builder, spin: Spin) => {
   return plugins;
 };
 
+const findNodeModulesDirs = () =>
+  upDirs(path.resolve('.'), 'node_modules').reduce((res, dir) => res.concat(fs.existsSync(dir) ? [dir] : []), []);
+
+const findNodeModule = (name, nodeModulesDirs) => {
+  for (const dir of nodeModulesDirs) {
+    const packageDir = path.join(dir, name);
+    if (fs.existsSync(path.join(packageDir, 'package.json'))) {
+      return packageDir;
+    }
+  }
+};
+
 const getDepsForNode = (spin: Spin, builder: Builder): string[] => {
+  const nodeModulesDirs = findNodeModulesDirs();
   const pkg = builder.require('./package.json');
   const deps = [];
   for (const key of Object.keys(pkg.dependencies)) {
@@ -164,11 +179,13 @@ const getDepsForNode = (spin: Spin, builder: Builder): string[] => {
       key.indexOf('@types') !== 0 &&
       (!val || (val.constructor === Array && val.indexOf(builder.parent.name) >= 0) || val === builder.parent.name)
     ) {
-      const resolves = builder.require.probe(key);
-      const exists = builder.require.probe(key + '/package.json');
-      if (resolves && resolves.endsWith('.js')) {
-        deps.push(key);
-      } else if (!resolves && !exists) {
+      const moduleDir = findNodeModule(key, nodeModulesDirs);
+      if (moduleDir && !fs.lstatSync(moduleDir).isSymbolicLink()) {
+        const resolves = builder.require.probe(key);
+        if (resolves && resolves.endsWith('.js')) {
+          deps.push(key);
+        }
+      } else if (!moduleDir) {
         throw new Error(`Cannot find module '${key}'`);
       }
     }
