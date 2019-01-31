@@ -432,7 +432,8 @@ const createConfig = (builder: Builder, spin: Spin) => {
           path: builder.buildDir
             ? path.join(builder.require.cwd, builder.buildDir)
             : path.join(builder.require.cwd, builder.frontendBuildDir || 'build/client', 'web'),
-          publicPath: '/'
+          publicPath: '/',
+          libraryTarget: 'umd'
         },
         devServer: {
           ...baseDevServerConfig,
