@@ -67,9 +67,10 @@ try {
       }, {});
 
     if (Object.keys(enabledBuilders).length === 0) {
-      throw new Error('No enabled spinjs builders found, exiting.');
+      logger.warn('No enabled spinjs builders found, exiting.');
+    } else {
+      execute(cmd, argv, enabledBuilders, config.spin);
     }
-    execute(cmd, argv, enabledBuilders, config.spin);
   }
 } catch (e) {
   logger.error(e);
