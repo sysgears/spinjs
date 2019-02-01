@@ -338,6 +338,17 @@ const createConfig = (builder: Builder, spin: Spin) => {
     }
   }
 
+  if (stack.hasAny('web') && webpackVer >= 4) {
+    config = {
+      ...config,
+      output: {
+        ...config.output,
+        libraryTarget: 'umd',
+        globalObject: "(typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : this)"
+      }
+    };
+  }
+
   if (stack.hasAny('dll')) {
     const name = `vendor_${humps.camelize(builder.parent.name)}`;
     config = {
@@ -432,8 +443,7 @@ const createConfig = (builder: Builder, spin: Spin) => {
           path: builder.buildDir
             ? path.join(builder.require.cwd, builder.buildDir)
             : path.join(builder.require.cwd, builder.frontendBuildDir || 'build/client', 'web'),
-          publicPath: '/',
-          libraryTarget: 'umd'
+          publicPath: '/'
         },
         devServer: {
           ...baseDevServerConfig,
