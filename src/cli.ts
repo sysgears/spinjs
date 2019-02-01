@@ -13,7 +13,7 @@ try {
     .command('build', 'compiles package for usage in production')
     .command(['watch', 'start'], 'launches package in development mode with hot code reload')
     .command('exp', 'launches server for exp and exp tool')
-    .command('test [mocha-webpack options]', 'runs package tests')
+    .command('test [mochapack options]', 'runs package tests')
     .demandCommand(1, '')
     .option('c', {
       describe: 'Specify path to config file',

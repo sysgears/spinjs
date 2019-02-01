@@ -1088,8 +1088,13 @@ const execute = (cmd: string, argv: any, builders: Builders, spin: Spin) => {
               testArgs.push('--include', 'raf/polyfill');
             }
           }
+          const haveMochapack = builder.require.probe('mochapack');
+          if (!haveMochapack && !builder.require.probe('mocha-webpack')) {
+            throw new Error('Unable to find `mochapack`, please add it to the project');
+          }
+          const mochapackCmd = haveMochapack ? 'mochapack' : 'mocha-webpack';
 
-          const testCmd = path.join(process.cwd(), 'node_modules/.bin/mocha-webpack' + (__WINDOWS__ ? '.cmd' : ''));
+          const testCmd = path.join(process.cwd(), 'node_modules/.bin/' + mochapackCmd + (__WINDOWS__ ? '.cmd' : ''));
           testArgs.push.apply(testArgs, process.argv.slice(process.argv.indexOf('test') + 1));
           spinLogger.info(`Running ${testCmd} ${testArgs.join(' ')}`);
 
