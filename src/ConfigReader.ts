@@ -6,7 +6,6 @@ import { Builders } from './Builder';
 import { ConfigPlugin } from './ConfigPlugin';
 import createRequire from './createRequire';
 import EnhancedError from './EnhancedError';
-import inferConfig from './inferConfig';
 import Spin from './Spin';
 import Stack from './Stack';
 
@@ -19,7 +18,7 @@ export default class ConfigReader {
     this.plugins = plugins;
   }
 
-  public readConfig(filePath: string): Builders {
+  public readConfig(filePath: string, derivedConfig: object): Builders {
     let configObject: any;
     if (fs.existsSync(filePath)) {
       process.chdir(path.dirname(filePath));
@@ -29,7 +28,7 @@ export default class ConfigReader {
           try {
             configObject = JSON.parse(fs.readFileSync(filePath).toString());
             if (path.basename(filePath) === 'package.json') {
-              configObject = configObject.spin || inferConfig(configObject, filePath);
+              configObject = configObject.spin;
             }
           } catch (e) {
             throw new EnhancedError(`Error parsing ${path.resolve(filePath)}`, e);
@@ -42,7 +41,12 @@ export default class ConfigReader {
         process.chdir(this.spin.cwd);
       }
     }
-    return typeof configObject === 'undefined' ? undefined : this._createBuilders(filePath, configObject);
+    return typeof configObject === 'undefined' && !fs.existsSync(filePath)
+      ? undefined
+      : this._createBuilders(
+          filePath,
+          configObject && configObject.builders ? configObject : this.spin.merge(derivedConfig, configObject)
+        );
   }
 
   private _createBuilders(filePath: string, config: any): Builders {
@@ -59,13 +63,17 @@ export default class ConfigReader {
     const relativePath = path.relative(this.spin.cwd, path.dirname(filePath));
     const builders: Builders = {};
     const { stack, plugins, ...options } = config.options;
-    for (const name of Object.keys(config.builders)) {
+    for (const name of Object.keys(config.builders || {})) {
       const builderVal = config.builders[name];
       const builder: any =
         typeof builderVal === 'object' && builderVal.constructor !== Array ? { ...builderVal } : { stack: builderVal };
       builder.name = name;
       builder.require = createRequire(path.resolve(relativePath));
-      builder.stack = new Stack(config.options.stack || [], typeof builder === 'object' ? builder.stack : builder);
+      builder.stack = new Stack(
+        builder.name,
+        config.options.stack || [],
+        typeof builder === 'object' ? builder.stack : builder
+      );
       builder.plugins = (config.plugins || []).concat(builder.plugins || []);
       builder.roles = builder.roles || ['build', 'watch'];
       const merged = merge(options, builder);
@@ -79,7 +87,6 @@ export default class ConfigReader {
       // TODO: remove backendBuildDir, frontendBuildDir in 0.5.x
       builder.buildDir = builder.backendBuildDir || builder.frontendBuildDir ? undefined : builder.buildDir || 'build';
       builder.nodeDebugger = typeof builder.nodeDebugger !== 'undefined' ? builder.nodeDebugger : true;
-      builder.dllBuildDir = builder.dllBuildDir || 'build/dll';
       builder.webpackDll = typeof builder.webpackDll !== 'undefined' ? builder.webpackDll : true;
       builder.sourceMap = typeof builder.sourceMap !== 'undefined' ? builder.sourceMap : true;
       builder.minify = typeof builder.minify !== 'undefined' ? builder.minify : true;
@@ -89,6 +96,13 @@ export default class ConfigReader {
           : typeof builder.cache !== 'undefined'
             ? builder.cache
             : 'auto';
+      if (builder.derived) {
+        builder.dllBuildDir =
+          builder.dllBuildDir ||
+          path.join(typeof builder.cache === 'string' && builder.cache !== 'auto' ? builder.cache : '.cache', 'dll');
+      } else {
+        builder.dllBuildDir = builder.dllBuildDir || 'build/dll';
+      }
       builder.plugins = this.plugins.concat((builder.plugins || []).map(pluginName => new (require(pluginName))()));
     }
     return builders;

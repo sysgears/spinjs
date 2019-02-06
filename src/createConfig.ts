@@ -8,6 +8,7 @@ import { Builder } from './Builder';
 import BuilderDiscoverer from './BuilderDiscoverer';
 import { ConfigPlugin } from './ConfigPlugin';
 import ConfigReader from './ConfigReader';
+import inferConfig from './inferConfig';
 import AngularPlugin from './plugins/AngularPlugin';
 import ApolloPlugin from './plugins/ApolloPlugin';
 import BabelPlugin from './plugins/BabelPlugin';
@@ -80,7 +81,10 @@ const createConfig = (cwd: string, cmd: string, argv: any, builderName?: string)
 
     discoveredBuilders = builderDiscoverer.discover();
   } else {
-    discoveredBuilders = new ConfigReader(spin, plugins).readConfig(process.env.BUILDER_CONFIG_PATH);
+    discoveredBuilders = new ConfigReader(spin, plugins).readConfig(
+      process.env.BUILDER_CONFIG_PATH,
+      inferConfig(path.join(path.dirname(process.env.BUILDER_CONFIG_PATH), 'package.json'))
+    );
   }
   if (!discoveredBuilders) {
     throw new Error('Cannot find spinjs config');
@@ -111,7 +115,7 @@ const createConfig = (cwd: string, cmd: string, argv: any, builderName?: string)
       dllBuilder.name = builder.name + 'Dll';
       dllBuilder.require = builder.require;
       dllBuilder.parent = builder;
-      dllBuilder.stack = new Stack(dllBuilder.stack.technologies, 'dll');
+      dllBuilder.stack = new Stack(dllBuilder.name, ...dllBuilder.stack.technologies, 'dll');
       builders[`${builderId.split('[')[0]}[${builder.name}Dll]`] = dllBuilder;
       builder.child = dllBuilder;
     }

@@ -68,6 +68,11 @@ const createPlugins = (builder: Builder, spin: Spin) => {
     defines.__BACKEND_URL__ = `'${backendOption.replace('{ip}', ip.address())}'`;
   }
 
+  if (builder.require.probe('clean-webpack-plugin')) {
+    const CleanWebpackPlugin = builder.require('clean-webpack-plugin');
+    plugins = plugins.concat(new CleanWebpackPlugin(builder.buildDir));
+  }
+
   if (stack.hasAny('dll')) {
     const name = `vendor_${humps.camelize(builder.parent.name)}`;
     plugins = [
@@ -124,9 +129,21 @@ const createPlugins = (builder: Builder, spin: Spin) => {
 
         if (!builder.ssr) {
           const HtmlWebpackPlugin = builder.require('html-webpack-plugin');
+          let template = builder.htmlTemplate;
+          if (!template) {
+            const dirs = ['.', 'src'];
+            for (const dir of dirs) {
+              const htmlPath = path.join(builder.require.cwd, dir, 'index.html');
+              if (fs.existsSync(htmlPath)) {
+                template = htmlPath;
+                break;
+              }
+            }
+          }
+          template = template || path.join(__dirname, '../../html-plugin-template.ejs');
           plugins.push(
             new HtmlWebpackPlugin({
-              template: builder.htmlTemplate || path.join(__dirname, '../../html-plugin-template.ejs'),
+              template,
               inject: 'body'
             })
           );
@@ -221,7 +238,7 @@ const createConfig = (builder: Builder, spin: Spin) => {
     },
     resolve: { symlinks: false, cacheWithContext: false },
     watchOptions: {
-      ignored: /build/
+      ignored: new RegExp(builder.buildDir)
     },
     bail: !spin.dev,
     stats: {
@@ -259,6 +276,7 @@ const createConfig = (builder: Builder, spin: Spin) => {
     hot: true,
     publicPath: '/',
     headers: { 'Access-Control-Allow-Origin': '*' },
+    open: builder.openBrowser !== false,
     quiet: false,
     noInfo: true,
     historyApiFallback: true

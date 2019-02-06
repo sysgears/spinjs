@@ -20,9 +20,13 @@ const isSpinApp = (pkg: any): boolean => {
   );
 };
 
-export default (pkg: any, pkgJsonPath): any => {
+export default (pkgJsonPath: string): object => {
+  if (!pkgJsonPath || !fs.existsSync(pkgJsonPath)) {
+    return {};
+  }
+  const pkg = JSON.parse(fs.readFileSync(pkgJsonPath, 'utf8'));
   if (!isSpinApp(pkg)) {
-    return undefined;
+    return {};
   }
   const pkgPathList = upDirs(path.dirname(pkgJsonPath), 'package.json');
   let deps: any = {};
@@ -46,7 +50,7 @@ export default (pkg: any, pkgJsonPath): any => {
   }
 
   const stack = [];
-  if (deps['apollo-server-express']) {
+  if (deps['apollo-server-express'] || deps.express) {
     stack.push('server');
   }
   if (deps['react-native']) {
@@ -54,7 +58,7 @@ export default (pkg: any, pkgJsonPath): any => {
   } else if (deps['react-dom']) {
     stack.push('web');
   }
-  if (deps['babel-core']) {
+  if (deps['babel-core'] || deps['@babel/core']) {
     stack.push('es6');
   }
   stack.push('js');
@@ -90,7 +94,8 @@ export default (pkg: any, pkgJsonPath): any => {
   const builderDefaults = {
     entry,
     silent: true,
-    nodeDebugger: false
+    nodeDebugger: false,
+    derived: true
   };
   if (stack.indexOf('react-native') >= 0) {
     const builderAndroid = {

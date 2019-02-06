@@ -275,14 +275,14 @@ const startServerWebpack = (spin, builder) => {
 };
 
 const openFrontend = (spin, builder, logger) => {
-  const opn = builder.require('opn');
+  const opn = builder.require.probe('opn') ? builder.require('opn') : null;
   try {
     if (builder.stack.hasAny('web')) {
       const lanUrl = `http://${ip.address()}:${builder.config.devServer.port}`;
       const localUrl = `http://localhost:${builder.config.devServer.port}`;
       if (isDocker() || builder.openBrowser === false) {
         logger.info(`App is running at, Local: ${localUrl} LAN: ${lanUrl}`);
-      } else {
+      } else if (opn) {
         opn(localUrl);
       }
     } else if (builder.stack.hasAny('react-native')) {
