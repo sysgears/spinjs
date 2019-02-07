@@ -485,7 +485,7 @@ the server code.
 ### `stack`
 
 Defines the technology stack for the platform. You can provide an array of string values or a string with technologies
-separated by a colon.
+separated by a colon
 
 The `stack` property can accept the following technologies:
 
@@ -500,6 +500,7 @@ The `stack` property can accept the following technologies:
 | react-native      | React Native with Expo                       |
 | react-hot-loader  | Use React Hot Loader during development      |
 | styled-components | Styled Components                            |
+| storybook         | Generate Webpack config for Storybook        |
 | css               | CSS                                          |
 | sass              | SCSS code is transpiled to CSS               |
 | less              | LESS code is transpiled to CSS               |
