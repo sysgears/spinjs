@@ -34,7 +34,7 @@ const createPlugins = (builder: Builder, spin: Spin) => {
         })
       );
     }
-    if (stack.hasAny(['server', 'web']) && !spin.test) {
+    if (stack.hasAny(['server', 'web']) && !spin.test && !stack.hasAny('storybook')) {
       plugins.push(new webpack.HotModuleReplacementPlugin());
       if (webpackVer < 4) {
         plugins.push(new webpack.NoEmitOnErrorsPlugin());
@@ -127,7 +127,7 @@ const createPlugins = (builder: Builder, spin: Spin) => {
           })
         );
 
-        if (!builder.ssr) {
+        if (!builder.ssr && !stack.hasAny('storybook')) {
           const HtmlWebpackPlugin = builder.require('html-webpack-plugin');
           let template = builder.htmlTemplate;
           if (!template) {

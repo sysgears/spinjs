@@ -6,7 +6,6 @@ import * as path from 'path';
 import { Builders } from './Builder';
 import { ConfigPlugin } from './ConfigPlugin';
 import ConfigReader from './ConfigReader';
-import inferConfig from './inferConfig';
 import Spin from './Spin';
 
 export default class BuilderDiscoverer {
@@ -20,45 +19,28 @@ export default class BuilderDiscoverer {
     this.argv = argv;
   }
 
-  public discover(): Builders {
+  public discover(builderOverrides: any): Builders {
     const packageRootPaths = this._detectRootPaths();
     return packageRootPaths.reduce((res: any, pathName: string) => {
-      return { ...res, ...this._discoverRecursively(pathName) };
+      return { ...res, ...this._discoverRecursively(pathName, builderOverrides) };
     }, {});
   }
 
-  private _discoverRecursively(dir: string): Builders {
+  private _discoverRecursively(dir: string, builderOverrides: any): Builders {
     if (path.basename(dir) === '.expo') {
       return undefined;
     }
 
-    let builders: Builders;
-    if (this.argv.c) {
-      builders = this.configReader.readConfig(path.join(dir, this.argv.c), inferConfig(path.join(dir, 'package.json')));
-    } else {
-      const candidates = ['.spinrc.json', '.spinrc', '.spinrc.js', 'package.json'];
-      for (const fileName of candidates) {
-        const configPath = path.join(dir, fileName);
-        try {
-          builders = this.configReader.readConfig(
-            configPath,
-            inferConfig(path.join(path.dirname(configPath), 'package.json'))
-          );
-        } catch (e) {
-          e.message = `while processing ${configPath}: ${e.message}`;
-          throw e;
-        }
-        if (builders) {
-          break;
-        }
-      }
-    }
+    let builders = this.configReader.readConfig({
+      filePath: this.argv.c ? path.join(dir, this.argv.c) : dir,
+      builderOverrides
+    });
 
     const files = fs.readdirSync(dir);
     for (const name of files) {
       const dirPath = path.join(dir, name);
       if (name !== 'node_modules' && fs.statSync(dirPath).isDirectory()) {
-        builders = { ...builders, ...this._discoverRecursively(dirPath) };
+        builders = { ...builders, ...this._discoverRecursively(dirPath, builderOverrides) };
       }
     }
 

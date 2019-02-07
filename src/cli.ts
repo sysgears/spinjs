@@ -2,7 +2,7 @@ import * as cluster from 'cluster';
 import * as minilog from 'minilog';
 import * as yargs from 'yargs';
 
-import createConfig from './createConfig';
+import createBuilders from './createBuilders';
 import execute from './executor';
 
 minilog.enable();
@@ -47,7 +47,7 @@ try {
   } else {
     const cwd = process.cwd();
     if (['exp', 'build', 'test', 'watch', 'start'].indexOf(cmd) >= 0) {
-      config = createConfig(cwd, cmd, argv);
+      config = createBuilders({ cwd, cmd, argv });
     }
     if (cluster.isMaster) {
       logger.info(`Version ${VERSION}`);

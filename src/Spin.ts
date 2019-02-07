@@ -29,6 +29,11 @@ export default class Spin {
     return merge.smart(config, overrides);
   }
 
+  public mergeWithInStrategy(config: any, overrides: any): any {
+    const { merge: mergeStrategy, ...configOverrides } = overrides || { merge: {} };
+    return this.mergeWithStrategy(mergeStrategy, config, configOverrides);
+  }
+
   public mergeWithStrategy(strategy: any, config: any, overrides: any): Configuration {
     return merge.smartStrategy(strategy)(config, overrides);
   }

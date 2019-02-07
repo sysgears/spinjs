@@ -1,6 +1,6 @@
 import * as minilog from 'minilog';
 
-import createConfig from './createConfig';
+import createBuilders from './createBuilders';
 
 minilog.enable();
 const logger = minilog('spin');
@@ -8,7 +8,7 @@ const logger = minilog('spin');
 export default (cwd, configPath, builderName) => {
   let builder;
   try {
-    const builders = createConfig(cwd, 'watch', { c: configPath }, builderName).builders;
+    const builders = createBuilders({ cwd, cmd: 'watch', argv: { c: configPath }, builderName }).builders;
     for (const builderId of Object.keys(builders)) {
       if (builders[builderId].name === builderName) {
         builder = builders[builderId];

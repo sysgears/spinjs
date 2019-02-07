@@ -6,8 +6,15 @@ import { Builders } from './Builder';
 import { ConfigPlugin } from './ConfigPlugin';
 import createRequire from './createRequire';
 import EnhancedError from './EnhancedError';
+import inferConfig from './inferConfig';
 import Spin from './Spin';
 import Stack from './Stack';
+
+interface ReadConfigOptions {
+  filePath: string;
+  inferedConfig?: any;
+  builderOverrides?: any;
+}
 
 export default class ConfigReader {
   private spin: Spin;
@@ -18,38 +25,59 @@ export default class ConfigReader {
     this.plugins = plugins;
   }
 
-  public readConfig(filePath: string, derivedConfig: object): Builders {
-    let configObject: any;
-    if (fs.existsSync(filePath)) {
-      process.chdir(path.dirname(filePath));
-      try {
-        const extname = path.extname(filePath);
-        if (['.json', ''].indexOf(extname) >= 0) {
-          try {
-            configObject = JSON.parse(fs.readFileSync(filePath).toString());
-            if (path.basename(filePath) === 'package.json') {
-              configObject = configObject.spin;
-            }
-          } catch (e) {
-            throw new EnhancedError(`Error parsing ${path.resolve(filePath)}`, e);
+  public readConfig(options: ReadConfigOptions): Builders {
+    const { filePath, inferedConfig, builderOverrides } = options;
+    if (fs.existsSync(filePath) && fs.statSync(filePath).isDirectory()) {
+      const dir = filePath;
+      const candidates = ['.spinrc.json', '.spinrc', '.spinrc.js', 'package.json'];
+      for (const fileName of candidates) {
+        const configPath = path.join(dir, fileName);
+        const derivedConfig = inferConfig(path.join(dir, 'package.json'));
+        try {
+          const builders = this.readConfig({ filePath: configPath, inferedConfig: derivedConfig, builderOverrides });
+          if (builders) {
+            return builders;
           }
-        } else {
-          const exports = require(path.resolve(filePath));
-          configObject = exports instanceof Function ? exports(this.spin) : exports;
+        } catch (e) {
+          e.message = `while processing ${configPath}: ${e.message}`;
+          throw e;
         }
-      } finally {
-        process.chdir(this.spin.cwd);
       }
+    } else {
+      const derivedConfig = inferedConfig || inferConfig(path.join(path.dirname(filePath), 'package.json'));
+      let configObject: any;
+      if (fs.existsSync(filePath)) {
+        process.chdir(path.dirname(filePath));
+        try {
+          const extname = path.extname(filePath);
+          if (['.json', ''].indexOf(extname) >= 0) {
+            try {
+              configObject = JSON.parse(fs.readFileSync(filePath).toString());
+              if (path.basename(filePath) === 'package.json') {
+                configObject = configObject.spin;
+              }
+            } catch (e) {
+              throw new EnhancedError(`Error parsing ${path.resolve(filePath)}`, e);
+            }
+          } else {
+            const exports = require(path.resolve(filePath));
+            configObject = exports instanceof Function ? exports(this.spin) : exports;
+          }
+        } finally {
+          process.chdir(this.spin.cwd);
+        }
+      }
+      return typeof configObject === 'undefined' && !fs.existsSync(filePath)
+        ? undefined
+        : this._createBuilders(
+            filePath,
+            configObject && configObject.builders ? configObject : this.spin.merge(derivedConfig, configObject),
+            builderOverrides
+          );
     }
-    return typeof configObject === 'undefined' && !fs.existsSync(filePath)
-      ? undefined
-      : this._createBuilders(
-          filePath,
-          configObject && configObject.builders ? configObject : this.spin.merge(derivedConfig, configObject)
-        );
   }
 
-  private _createBuilders(filePath: string, config: any): Builders {
+  private _createBuilders(filePath: string, config: any, builderOverrides: any): Builders {
     if (typeof config === 'string' || (typeof config === 'object' && config.constructor === Array)) {
       config = {
         builders: {
@@ -65,8 +93,10 @@ export default class ConfigReader {
     const { stack, plugins, ...options } = config.options;
     for (const name of Object.keys(config.builders || {})) {
       const builderVal = config.builders[name];
-      const builder: any =
-        typeof builderVal === 'object' && builderVal.constructor !== Array ? { ...builderVal } : { stack: builderVal };
+      const builder: any = this.spin.mergeWithInStrategy(
+        typeof builderVal === 'object' && builderVal.constructor !== Array ? { ...builderVal } : { stack: builderVal },
+        builderOverrides
+      );
       builder.name = name;
       builder.require = createRequire(path.resolve(relativePath));
       builder.stack = new Stack(
