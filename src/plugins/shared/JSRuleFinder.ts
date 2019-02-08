@@ -1,49 +1,8 @@
-import * as fs from 'fs';
-import * as path from 'path';
 import { Builder } from '../../Builder';
+import resolveModule from './resolveModule';
 
-const transpiledPackages = {};
-const transpiledModules = {};
-const KNOWN_RN_PACKAGES = [/expo.*/, /@expo.*/, /react-navigation.*/, /react-native.*/];
-
-export const excludeNonProjectModules = (builder: Builder) => modulePath => {
-  const idx = modulePath.lastIndexOf(path.sep + 'node_modules' + path.sep);
-  if (idx >= 0) {
-    if (transpiledModules[modulePath] === undefined) {
-      const pkgPathStart = modulePath[idx + 14] !== '@' ? idx + 14 : modulePath.indexOf(path.sep, idx + 14) + 1;
-      let pkgPathEnd = modulePath.indexOf(path.sep, pkgPathStart);
-      if (pkgPathEnd < 0) {
-        pkgPathEnd = modulePath.length;
-      }
-      const pkgPath = modulePath.substr(0, pkgPathEnd);
-      if (transpiledPackages[pkgPath] === undefined) {
-        const pkgName = pkgPath.substr(idx + 14);
-        let shouldTranspile = KNOWN_RN_PACKAGES.some(regex => regex.test(pkgName));
-        if (!shouldTranspile) {
-          try {
-            shouldTranspile =
-              fs.lstatSync(pkgPath).isSymbolicLink() && fs.realpathSync(pkgPath).indexOf(builder.projectRoot) === 0;
-          } catch (e) {}
-        }
-        if (!shouldTranspile) {
-          let entryFileText;
-          try {
-            entryFileText = fs.readFileSync(builder.require.resolve(pkgName), 'utf8');
-          } catch (e) {}
-          shouldTranspile =
-            !entryFileText || entryFileText.indexOf('__esModule') >= 0
-              ? false
-              : /^(export|import)[\s]/m.test(entryFileText);
-        }
-        transpiledPackages[pkgPath] = shouldTranspile;
-      }
-      transpiledModules[modulePath] = transpiledPackages[pkgPath];
-    }
-    return !transpiledModules[modulePath];
-  } else {
-    return false;
-  }
-};
+export const excludeNonProjectModules = (builder: Builder) => modulePath =>
+  !resolveModule(builder, modulePath).shouldTranspile;
 
 export default class JSRuleFinder {
   public builder: Builder;

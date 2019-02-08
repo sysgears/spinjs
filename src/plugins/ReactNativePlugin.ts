@@ -12,7 +12,9 @@ let babelRegisterDone = false;
 
 const registerBabel = (builder: Builder): void => {
   if (!babelRegisterDone) {
-    const isBabel7 = builder.require.probe('@babel/core') && builder.require.probe('@babel/preset-flow');
+    const babelPkgJson = builder.require.probe('babel-core') && builder.require('babel-core/package.json');
+    const isBabel7 =
+      builder.require.probe('@babel/core') && (!babelPkgJson || babelPkgJson.version.indexOf('bridge') >= 0);
     const babelRegister = isBabel7 ? '@babel/register' : 'babel-register';
     const reactNativePreset =
       isBabel7 && builder.require.probe('metro-react-native-babel-preset')

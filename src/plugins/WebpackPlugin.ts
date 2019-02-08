@@ -3,11 +3,12 @@ import * as humps from 'humps';
 import * as ip from 'ip';
 import * as path from 'path';
 import * as url from 'url';
-import upDirs from '../upDirs';
 
 import { Builder } from '../Builder';
 import { ConfigPlugin } from '../ConfigPlugin';
 import Spin from '../Spin';
+import upDirs from '../upDirs';
+import resolveModule from './shared/resolveModule';
 
 const __WINDOWS__ = /^win/.test(process.platform);
 
@@ -263,8 +264,12 @@ const createConfig = (builder: Builder, spin: Spin) => {
   if (builder.sourceMap) {
     baseConfig.devtool = spin.dev ? '#cheap-module-source-map' : '#nosources-source-map';
     baseConfig.output.devtoolModuleFilenameTemplate = spin.dev
-      ? info => 'webpack:///./' + path.relative(cwd, info.absoluteResourcePath.split('?')[0]).replace(/\\/g, '/')
-      : info => path.relative(cwd, info.absoluteResourcePath);
+      ? info =>
+          'webpack:///./' +
+          path
+            .relative(cwd, resolveModule(builder, info.absoluteResourcePath.split('?')[0]).realPath)
+            .replace(/\\/g, '/')
+      : info => path.relative(cwd, resolveModule(builder, info.absoluteResourcePath).realPath);
   }
   if (webpackVer >= 4) {
     baseConfig.mode = !spin.dev ? 'production' : 'development';
@@ -311,12 +316,10 @@ const createConfig = (builder: Builder, spin: Spin) => {
       }
     };
     if (builder.sourceMap) {
-      config.output.devtoolModuleFilenameTemplate = spin.dev
-        ? (info: any) =>
-            info.absoluteResourcePath.indexOf('..') === 0
-              ? path.join(builder.require.cwd, info.absoluteResourcePath)
-              : info.absoluteResourcePath
-        : (info: any) => path.relative(cwd, info.absoluteResourcePath);
+      config.output.devtoolModuleFilenameTemplate = (info: any) => {
+        const modPath = path.relative(config.output.path, resolveModule(builder, info.absoluteResourcePath).realPath);
+        return modPath;
+      };
     }
   } else {
     config = {

@@ -14,7 +14,9 @@ export default class BabelPlugin implements ConfigPlugin {
       (!builder.stack.hasAny('dll') || builder.stack.hasAny(['android', 'ios']))
     ) {
       if (builder.stack.hasAny(['babel', 'es6']) && !builder.stack.hasAny('dll')) {
-        const isBabel7 = builder.require.probe('@babel/core');
+        const babelPkgJson = builder.require.probe('babel-core') && builder.require('babel-core/package.json');
+        const isBabel7 =
+          builder.require.probe('@babel/core') && (!babelPkgJson || babelPkgJson.version.indexOf('bridge') >= 0);
         builder.config = spin.merge(
           {
             entry: {
