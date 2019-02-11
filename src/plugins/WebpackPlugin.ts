@@ -302,6 +302,8 @@ const createConfig = (builder: Builder, spin: Spin) => {
           request.indexOf('webpack') < 0 &&
           request.indexOf('babel-polyfill') < 0 &&
           request.indexOf('@babel/polyfill') < 0 &&
+          request.indexOf('mochapack') < 0 &&
+          request.indexOf('mocha-webpack') < 0 &&
           !request.startsWith('.')
         ) {
           const fullPath = builder.require.probe(request, context);
