@@ -53,6 +53,9 @@ export default (pkgJsonPath: string): object => {
   if (deps['apollo-server-express'] || deps.express) {
     stack.push('server');
   }
+  if (deps['swagger-ui-express'] || deps['swagger-jsdoc']) {
+    stack.push('rest');
+  }
   if (deps['react-native']) {
     stack.push('android');
   } else if (deps['react-dom']) {

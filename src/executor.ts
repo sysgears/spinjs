@@ -46,6 +46,7 @@ const __WINDOWS__ = /^win/.test(process.platform);
 
 let server;
 let startBackend = false;
+let lastExitCode = 0;
 let nodeDebugOpt;
 
 process.on('exit', () => {
@@ -55,14 +56,19 @@ process.on('exit', () => {
 });
 
 const spawnServer = (cwd, args: any[], options: { nodeDebugger: boolean; serverPath: string }, logger) => {
-  server = spawn('node', [...args], { stdio: [0, 1, 2], cwd });
-  logger.debug(`Spawning ${['node', ...args].join(' ')}`);
+  server = spawn('node', [...args], {
+    stdio: [0, 1, 2],
+    cwd,
+    env: { ...process.env, LAST_EXIT_CODE: `${lastExitCode}` }
+  });
+  logger.info(`Spawning ${['node', ...args].join(' ')}, env: { LAST_EXIT_CODE: ${lastExitCode} }`);
   server.on('exit', code => {
+    lastExitCode = code;
     if (code === 250) {
       // App requested full reload
       startBackend = true;
     }
-    logger.info('Backend has been stopped');
+    logger.info(`Backend stopped, exit code:`, code);
     server = undefined;
     runServer(cwd, options.serverPath, options.nodeDebugger, logger);
   });

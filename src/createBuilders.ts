@@ -18,6 +18,7 @@ import ReactHotLoaderPlugin from './plugins/ReactHotLoaderPlugin';
 import ReactNativePlugin from './plugins/ReactNativePlugin';
 import ReactNativeWebPlugin from './plugins/ReactNativeWebPlugin';
 import ReactPlugin from './plugins/ReactPlugin';
+import RestPlugin from './plugins/RestPlugin';
 import StyledComponentsPlugin from './plugins/StyledComponentsPlugin';
 import TCombPlugin from './plugins/TCombPlugin';
 import TypeScriptPlugin from './plugins/TypeScriptPlugin';
@@ -78,7 +79,8 @@ const createBuilders = ({
     new StyledComponentsPlugin(),
     new AngularPlugin(),
     new VuePlugin(),
-    new I18NextPlugin()
+    new I18NextPlugin(),
+    new RestPlugin()
   ];
   const spin = new Spin(cwd, cmd);
   let role = cmd;
