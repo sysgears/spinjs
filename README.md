@@ -1,5 +1,13 @@
 # SpinJS
 
+**Update!**
+
+Our build tool SpinJS has been renamed to **Zen** and is now maintained in another project. Please follow to a dedicated
+[Zen package] in Larix Framework to make contributions or find out more about our build tool. This repository is now 
+deprecated.
+ 
+Happy coding!
+
 [![Join the chat at https://gitter.im/sysgears/spinjs](https://badges.gitter.im/sysgears/spinjs.svg)](https://gitter.im/sysgears/spinjs?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![npm version](https://badge.fury.io/js/spinjs.svg)](https://badge.fury.io/js/spinjs) [![Twitter Follow](https://img.shields.io/twitter/follow/sysgears.svg?style=social)](https://twitter.com/sysgears)
 
@@ -87,6 +95,7 @@ We welcome any contributions to the project!
 
 Copyright © 2018 [SysGears INC]. This source code is licensed under the [MIT] license.
 
+[zen package]: https://github.com/sysgears/larix/tree/master/packages/zen
 [webpack]: https://webpack.js.org/
 [plugins]: https://github.com/sysgears/spinjs/blob/master/docs/concepts.md#plugins
 [spinjs scripts]: https://github.com/sysgears/spinjs/blob/master/docs/scripts.md
